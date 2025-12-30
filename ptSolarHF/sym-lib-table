@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "ptSolar-eagle-import")(type "KiCad")(uri "${KIPRJMOD}/ptSolar-eagle-import.kicad_sym")(options "")(descr ""))
+)
