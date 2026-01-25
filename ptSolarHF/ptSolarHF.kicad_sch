@@ -12854,7 +12854,7 @@
 				)
 			)
 		)
-		(property "Value" "Crystal_GND24"
+		(property "Value" "27MHz Xtal - 7M-27.000MEEQ-T"
 			(at 233.934 80.264 90)
 			(effects
 				(font
@@ -12882,6 +12882,15 @@
 		)
 		(property "Description" "Four pin crystal, GND on pins 2 and 4"
 			(at 234.95 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digikey" "887-1328-1-ND"
+			(at 234.95 86.36 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14748,6 +14757,15 @@
 			)
 		)
 		(property "Description" "I2C Programmable Any-Frequency CMOS Clock Generator, MSOP-8"
+			(at 264.16 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digikey" "  336-2399-5-ND"
 			(at 264.16 91.44 0)
 			(effects
 				(font
