@@ -219,10 +219,60 @@ void sendWSPR() {
   //      /155146h3842.00N/09655.55WO301/017/A=058239
   int hh = 0, mm = 0, ss = 0;
   GPSParser.getGPSTime(&hh, &mm, &ss);
-
+    Serial.println("sendWSPR()");
     digitalWrite(PIN_PTT_OUT, HIGH);   //key the transmitter
-    
+    delay(1000);
 
+
+    //Starting the wire
+    Serial.println("Wire begin");
+    Wire.begin();
+    delay(100);
+
+    Serial.println("set bus speed");
+    Wire.setClock(100000);    //Set to 400kHz
+    delay(100);
+
+
+  byte error, address;
+  int nDevices = 0;
+
+    Serial.println("Scanning I2C bus...");
+    delay(100);
+    for (address = 1; address < 127; address++) {
+        wdt_reset();
+        Serial.print("Checking address 0x");
+        Serial.println(address, HEX);
+        delay(100);
+        Wire.beginTransmission(address);
+        error = Wire.endTransmission();
+
+        if (error == 0) {
+            Serial.print(F("I2C device found at address 0x"));
+            delay(100);
+        if (address < 16) Serial.print('0');
+            Serial.print(address, HEX);
+            Serial.println(F("  !"));
+            delay(100);
+            nDevices++;
+        } else if (error == 4) {
+            Serial.print(F("Unknown error at address 0x"));
+            delay(100);
+        if (address < 16) Serial.print('0');
+            Serial.println(address, HEX);
+            delay(100);
+        }
+    }
+
+  if (nDevices == 0) 
+    Serial.println(F("No I2C devices found\n"));
+  else               
+    Serial.println(F("done\n"));
+    delay(1000);
+
+
+    Serial.println("Initializing clockgen...");
+    delay(100);
     /* Initialise the sensor */
   if (clockgen.begin() != ERROR_NONE)
   {
