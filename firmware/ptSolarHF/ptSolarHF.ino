@@ -31,37 +31,15 @@ Before programming for the first time, the ATmega fuses must be set.
 #include <avr/wdt.h>
 
 #include "MemoryFree.h"
-//include <Adafruit_SI5351.h>
-#include <si5351.h>
-#include <JTEncode.h>
-#include <rs_common.h>
-#include <int.h>
-#include <string.h>
+#include <Adafruit_SI5351.h>
 
-//Adafruit_SI5351 clockgen = Adafruit_SI5351();
+Adafruit_SI5351 clockgen = Adafruit_SI5351();
 
-//include "ptConfig.h"
+#include "ptConfig.h"
 #include "GPS.h"
 #include "ptTracker.h"
 
 #include <Wire.h>
-
-//WSPR Definitions
-#define WSPR_TONE_SPACING       146          // ~1.46 Hz
-#define WSPR_DELAY              683          // Delay value for WSPR
-#define WSPR_DEFAULT_FREQ       14097200UL
-
-unsigned long freq;
-uint8_t tx_buffer[5];//[WSPR_SYMBOL_COUNT];       // [255];   // WSPR_SYMBOL_COUNT is defined in JTEncode.h as 162
-uint8_t symbol_count;
-uint16_t tone_delay, tone_spacing;
-
-
-
-// Class instantiation
-Si5351 si5351;
-JTEncode jtencode;
-
 
 //PD0 is Serial Port RX
 //PD1 is Serial Port TX
@@ -97,8 +75,8 @@ JTEncode jtencode;
 #define WATCHDOG
 
 
-//ptConfig Config;                                                                        //Configuration object
-ptTracker Tracker(PIN_LED, PIN_AUDIO, PIN_ANALOG_BATTERY, 3);    //Object that manages the board-specific functions
+ptConfig Config;                                                                        //Configuration object
+ptTracker Tracker(PIN_LED, PIN_AUDIO, PIN_ANALOG_BATTERY, Config.getAnnounceMode());    //Object that manages the board-specific functions
 GPS GPSParser(PIN_GPS_RX, PIN_GPS_TX, PIN_GPS_EN);                                      //Object that parses the GPS strings
 
 
@@ -128,10 +106,6 @@ void setup() {
 
   Tracker.annunciate('k');
 
-    // Initialize the Si5351
-  // Change the 2nd parameter in init if using a ref osc other
-  // than 25 MHz
-//  si5351.init(SI5351_CRYSTAL_LOAD_10PF, 27000000, 0);
 
 
  
@@ -168,7 +142,7 @@ void loop() {
   }
 
   //Reboot the system hourly if configured to do so
-  if (false) {      //CONFIG
+  if (Config.getRebootHourly()) {
     //Reboot if we've been running for 60 minutes
     if (millis() > 3600000) {
       //we've been running for 60 minutes - reboot the system
@@ -181,7 +155,7 @@ void loop() {
   battMillivolts = (unsigned long)(Tracker.readBatteryVoltage(true) * 1000);  //read the battery voltage and spit it out to the serial port
 
   //check to see if we have sufficient battery to run the GPS
-  if (battMillivolts >= 4000) {//Config.getVoltThreshGPS()) {
+  if (battMillivolts >= Config.getVoltThreshGPS()) {
     GPSParser.enableGPS(true);    //enable the GPS module if it's not already. If it wasn't enabled, this will also initialize it.
 
     GPSParser.collectGPSStrings();
@@ -198,7 +172,7 @@ void loop() {
     }
   } else {
     //See if the Battery has dropped 100mV below the threshold.  If so, disable the GPS until the battery comes back up
-    if (battMillivolts < 3900) {//(Config.getVoltThreshGPS() - 100)) {
+    if (battMillivolts < (Config.getVoltThreshGPS() - 100)) {
       //we don't have enough battery to run the GPS - disable it
       Serial.println(F("Disabling GPS"));
       GPSParser.disableGPS();
@@ -228,57 +202,12 @@ void loop() {
 
 
 /**
- * @brief encode - This function sends the position of the tracker in a single line format. It includes information such as GPS time, latitude, longitude, course, speed, altitude, and other telemetry data.
+ * @brief sendWSPR - This function sends the position of the tracker in a single line format. It includes information such as GPS time, latitude, longitude, course, speed, altitude, and other telemetry data.
+ * @param bISSPath A boolean indicating whether or not to use the alternate path for communicating via the ISS space station.
  * @return void
- *
-void encode() {
-    uint8_t i;
-
-    // Reset the tone to the base frequency and turn on the output
-    si5351.output_enable(SI5351_CLK0, 1);
-    digitalWrite(PIN_PTT_OUT, HIGH);
-
-    for(i = 0; i < symbol_count; i++)
-    {
-        si5351.set_freq((freq * 100) + (tx_buffer[i] * tone_spacing), SI5351_CLK0);
-        delay(tone_delay);
-    }
-
-
-    // Turn off the output
-    si5351.output_enable(SI5351_CLK0, 0);
-    digitalWrite(PIN_PTT_OUT, LOW);    
-}
-*/
-void set_tx_buffer()
-{
-    // Clear out the transmit buffer
-    memset(tx_buffer, 0, 50);       //Should be 255
-    char call[] = "W0ZC";
-    char loc[] = "EM18";
-    uint8_t dbm = 27;
-    //jtencode.wspr_encode(call, loc, dbm, tx_buffer);
-}
-
+ */
 void sendWSPR() {
 
-    freq = WSPR_DEFAULT_FREQ;
-    symbol_count = WSPR_SYMBOL_COUNT; // From the library defines
-    tone_spacing = WSPR_TONE_SPACING;
-    tone_delay = WSPR_DELAY;
-
-
-    // Set CLK0 output
-    si5351.drive_strength(SI5351_CLK0, SI5351_DRIVE_8MA); // Set for max power if desired
-    si5351.output_enable(SI5351_CLK0, 0); // Disable the clock initially
-
-    // Encode the message in the transmit buffer
-    // This is RAM intensive and should be done separately from other subroutines
-    set_tx_buffer();    
-
-//    encode();
-
-/*
   char szTemp[15];    //largest string held should be the longitude
   int i;
   
@@ -294,10 +223,10 @@ void sendWSPR() {
     digitalWrite(PIN_PTT_OUT, HIGH);   //key the transmitter
     
 
-    // Initialise the sensor 
+    /* Initialise the sensor */
   if (clockgen.begin() != ERROR_NONE)
   {
-    // There was a problem detecting the IC ... check your connections
+    /* There was a problem detecting the IC ... check your connections */
     Serial.print("Ooops, no Si5351 detected ... Check your wiring or I2C ADDR!");
     while(1);
   }
@@ -305,9 +234,9 @@ void sendWSPR() {
   Serial.println("OK!");
 
 
-  // FRACTIONAL MODE --> More flexible but introduce clock jitter
-  // Setup PLLB to fractional mode @616.66667MHz (XTAL * 24 + 2/3)
-  // Setup Multisynth 1 to 13.55311MHz (PLLB/45.5)
+  /* FRACTIONAL MODE --> More flexible but introduce clock jitter */
+  /* Setup PLLB to fractional mode @616.66667MHz (XTAL * 24 + 2/3) */
+  /* Setup Multisynth 1 to 13.55311MHz (PLLB/45.5) */
 //   clockgen.setupPLL(SI5351_PLL_A, 33, 0, 1);       //set PLLA to 891MHz for use with Multisynth 0 if needed
 //   Serial.println("Set Output #1 to 13.553115MHz");
 //   //clockgen.setupMultisynth(1, SI5351_PLL_A, 31, 372135, 1000000);   
@@ -321,9 +250,9 @@ void sendWSPR() {
     //Serial.println("Set Output #0 to 112.5MHz");
     //clockgen.setupMultisynthInt(0, SI5351_PLL_A, SI5351_MULTISYNTH_DIV_8);
 
-    // FRACTIONAL MODE --> More flexible but introduce clock jitter
-    // Setup PLLB to fractional mode @616.66667MHz (XTAL * 24 + 2/3)
-    // Setup Multisynth 1 to 13.55311MHz (PLLB/45.5)
+    /* FRACTIONAL MODE --> More flexible but introduce clock jitter */
+    /* Setup PLLB to fractional mode @616.66667MHz (XTAL * 24 + 2/3) */
+    /* Setup Multisynth 1 to 13.55311MHz (PLLB/45.5) */
     clockgen.setupPLL(SI5351_PLL_B, 24, 0, 3);        //27MHz * (24 + 0/3) = 648MHz
     Serial.println("Set Output #1 to 13.553115MHz");
 
@@ -331,16 +260,16 @@ void sendWSPR() {
 
   
 
-  // Multisynth 2 is not yet used and won't be enabled, but can be
-  // Use PLLB @ 616.66667MHz, then divide by 900 -> 685.185 KHz
-  // then divide by 64 for 10.706 KHz
-  // configured using either PLL in either integer or fractional mode
+  /* Multisynth 2 is not yet used and won't be enabled, but can be */
+  /* Use PLLB @ 616.66667MHz, then divide by 900 -> 685.185 KHz */
+  /* then divide by 64 for 10.706 KHz */
+  /* configured using either PLL in either integer or fractional mode */
 
 //   Serial.println("Set Output #2 to 10.706 KHz");
 //   clockgen.setupMultisynth(2, SI5351_PLL_B, 900, 0, 1);
 //   clockgen.setupRdiv(2, SI5351_R_DIV_64);
 
-    // Enable the clocks
+    /* Enable the clocks */
     setFrequency(14231000);
     clockgen.enableOutputs(true);
     wdt_reset();    //reset the watchdog timer
@@ -363,14 +292,11 @@ void sendWSPR() {
     clockgen.enableOutputs(false);
     digitalWrite(PIN_PTT_OUT, LOW);    //unkey the transmitter
   
-*/
 
   //Normally seeing about 280mV of drop during the transmission with a 0.5F supercap - Correction: seeing about 800mV with .5F as of 5/16/2025
   Tracker.readBatteryVoltage(true);  //read the battery voltage after the transmission
 }
 
-
-/*
 void setFrequency(uint32_t freq) {
     uint32_t pllFreq = 648000000;
     uint8_t divider = calcDivider(freq, pllFreq);
@@ -404,8 +330,6 @@ uint32_t calcFractional(uint32_t freq, uint32_t pllFreq, uint8_t divider) {
 
   return (uint32_t)fFractional;
 }
-*/
-
 
 /**
  * @brief showVersion - Displays the version of the firmware and configuration
@@ -416,7 +340,7 @@ void showVersion() {
   Serial.print(F("Firmware Version: "));
   Serial.println((char *)FIRMWARE_VERSION);
   Serial.print(F("Config Version: "));
-  Serial.println("test");//CONFIG_VERSION);
+  Serial.println(CONFIG_VERSION);
   Serial.flush();
 }
 
@@ -452,7 +376,7 @@ void doConfigMode() {
       if (byTemp == 'D' || byTemp == 'd') {
         //used to reset the tracker back to N0CALL defaults
         Serial.println(F("Clear config"));
-        //Config.setDefaultConfig();        
+        Config.setDefaultConfig();        
         Tracker.annunciate('w');
       }
 
@@ -463,7 +387,7 @@ void doConfigMode() {
         Serial.println(F("Exercise"));
         
         Serial.println(F(" annun"));
-        //Config.setAnnounceMode(0x03);    //temporarily set the announce mode to both
+        Config.setAnnounceMode(0x03);    //temporarily set the announce mode to both
         Tracker.annunciate('x');
         
         Serial.println(Tracker.readBatteryVoltage(true));
@@ -537,8 +461,8 @@ void doConfigMode() {
 
 
       if (byTemp == 'R' || byTemp == 'r') {
-        // Config.readEEPROM();    //pull the configs from eeprom
-        // Config.sendConfigToPC();
+        Config.readEEPROM();    //pull the configs from eeprom
+        Config.sendConfigToPC();
 
         reboot();    //reboot the system while we're waiting for a new config to be loaded
       }
@@ -558,17 +482,17 @@ void doConfigMode() {
 
         Serial.println(F("Config mode..."));    //NOTE: This wording is critical for the ptConfigurator to know that we're in config mode
 
-        // if (Config.getConfigFromPC()) {
-        //   Serial.println(F(" loaded"));
+        if (Config.getConfigFromPC()) {
+          Serial.println(F(" loaded"));
 
-        //   Config.writeEEPROM();
-        //   Serial.println(F(" saved"));
+          Config.writeEEPROM();
+          Serial.println(F(" saved"));
 
-        //   Tracker.annunciate('w');
-        // } else {
-        //   //something failed during the read of the config data
-        //   Serial.println(F(" failed"));
-        // }
+          Tracker.annunciate('w');
+        } else {
+          //something failed during the read of the config data
+          Serial.println(F(" failed"));
+        }
 
         reboot();    //reboot the system to apply the new configuration
       }
