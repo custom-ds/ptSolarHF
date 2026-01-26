@@ -31,9 +31,14 @@ Before programming for the first time, the ATmega fuses must be set.
 #include <avr/wdt.h>
 
 #include "MemoryFree.h"
-#include <Adafruit_SI5351.h>
 
-Adafruit_SI5351 clockgen = Adafruit_SI5351();
+
+#include <si5351.h>
+#include "wspr_enc.h"
+#include "nhash.h"
+
+#include <int.h>
+#include <string.h>
 
 #include "ptConfig.h"
 #include "GPS.h"
@@ -74,7 +79,16 @@ Adafruit_SI5351 clockgen = Adafruit_SI5351();
 #define XMIT_MILLIS true
 #define WATCHDOG
 
+static const int32_t  SI5351_CORRECTION_PPB = 0;        // e.g. -1200 = -1.2 ppm
+static const si5351_drive SI5351_CLK0_DRIVE = SI5351_DRIVE_8MA;
 
+static const uint16_t WSPR_TONE_SPACING_CENTI_HZ = 146; // ≈1.46 Hz
+static const uint16_t WSPR_SYMBOL_COUNT           = 162;
+static const uint16_t WSPR_TONE_MS                = 683; // 8192/12000 s
+
+
+Si5351 si5351;
+static uint8_t wspr_symbols[WSPR_SYMBOL_COUNT];
 ptConfig Config;                                                                        //Configuration object
 ptTracker Tracker(PIN_LED, PIN_AUDIO, PIN_ANALOG_BATTERY, Config.getAnnounceMode());    //Object that manages the board-specific functions
 GPS GPSParser(PIN_GPS_RX, PIN_GPS_TX, PIN_GPS_EN);                                      //Object that parses the GPS strings
@@ -106,6 +120,13 @@ void setup() {
 
   Tracker.annunciate('k');
 
+    wdt_reset();
+
+    Serial.println(F("Initializing Si5351..."));
+    si5351.init(SI5351_CRYSTAL_LOAD_10PF, 27000000, 0);
+    si5351.set_correction(Config.getCorrection(), SI5351_PLL_INPUT_XO);
+    si5351.drive_strength(SI5351_CLK0, SI5351_CLK0_DRIVE);
+    si5351.output_enable(SI5351_CLK0, 0);
 
 
  
@@ -187,9 +208,8 @@ void loop() {
 
   
   if (bXmit) {
-    bXmitPermitted = true;    //assume that we can transmit
-
-    delay(DELAY_MS_BETWEEN_XMITS);    //delay about a second - if you don't you can run into multiple packets inside of a 2 second window
+    buildWSPRSymbols();
+    sendWSPR();
 
     if (!GPSParser.FixQuality() || GPSParser.NumSats() < 4) {
       //we are having GPS fix issues - issue an annunciation
@@ -201,152 +221,46 @@ void loop() {
 }
 
 
-/**
- * @brief sendWSPR - This function sends the position of the tracker in a single line format. It includes information such as GPS time, latitude, longitude, course, speed, altitude, and other telemetry data.
- * @param bISSPath A boolean indicating whether or not to use the alternate path for communicating via the ISS space station.
- * @return void
- */
-void sendWSPR() {
 
-  char szTemp[15];    //largest string held should be the longitude
-  int i;
-  
-  float fTemp;    //temporary variable
+static void buildWSPRSymbols() {
+    char pwr_str[4];
 
-  char statusIAT = 0;
-  
-  
-  //      /155146h3842.00N/09655.55WO301/017/A=058239
-  int hh = 0, mm = 0, ss = 0;
-  GPSParser.getGPSTime(&hh, &mm, &ss);
-    Serial.println("sendWSPR()");
-    digitalWrite(PIN_PTT_OUT, HIGH);   //key the transmitter
-    delay(1000);
+    wdt_reset();
+    static uint8_t PWR_dBm = 23;
+    itoa(PWR_dBm, pwr_str, 10);
 
+    char GRID[7];
+    GPSParser.getGridSquare(GRID);
+    uint8_t mtype = wspr_enc(Config.getCallsign(), GRID, pwr_str, wspr_symbols); // fills 162 symbols
 
-    //Starting the wire
-    Serial.println("Wire begin");
-    Wire.begin();
-    delay(100);
-
-    Serial.println("set bus speed");
-    Wire.setClock(100000);    //Set to 400kHz
-    delay(100);
-
-
-  byte error, address;
-  int nDevices = 0;
-
-    Serial.println("Scanning I2C bus...");
-    delay(100);
-    for (address = 1; address < 127; address++) {
-        wdt_reset();
-        Serial.print("Checking address 0x");
-        Serial.println(address, HEX);
-        delay(100);
-        Wire.beginTransmission(address);
-        error = Wire.endTransmission();
-
-        if (error == 0) {
-            Serial.print(F("I2C device found at address 0x"));
-            delay(100);
-        if (address < 16) Serial.print('0');
-            Serial.print(address, HEX);
-            Serial.println(F("  !"));
-            delay(100);
-            nDevices++;
-        } else if (error == 4) {
-            Serial.print(F("Unknown error at address 0x"));
-            delay(100);
-        if (address < 16) Serial.print('0');
-            Serial.println(address, HEX);
-            delay(100);
-        }
-    }
-
-  if (nDevices == 0) 
-    Serial.println(F("No I2C devices found\n"));
-  else               
-    Serial.println(F("done\n"));
-    delay(1000);
-
-
-    Serial.println("Initializing clockgen...");
-    delay(100);
-    /* Initialise the sensor */
-  if (clockgen.begin() != ERROR_NONE)
-  {
-    /* There was a problem detecting the IC ... check your connections */
-    Serial.print("Ooops, no Si5351 detected ... Check your wiring or I2C ADDR!");
-    while(1);
-  }
-
-  Serial.println("OK!");
-
-
-  /* FRACTIONAL MODE --> More flexible but introduce clock jitter */
-  /* Setup PLLB to fractional mode @616.66667MHz (XTAL * 24 + 2/3) */
-  /* Setup Multisynth 1 to 13.55311MHz (PLLB/45.5) */
-//   clockgen.setupPLL(SI5351_PLL_A, 33, 0, 1);       //set PLLA to 891MHz for use with Multisynth 0 if needed
-//   Serial.println("Set Output #1 to 13.553115MHz");
-//   //clockgen.setupMultisynth(1, SI5351_PLL_A, 31, 372135, 1000000);   
-//   clockgen.setupMultisynth(1, SI5351_PLL_A, 3503, 633280, 1000000);   
-//     clockgen.enableOutputs(true);
-
-    uint32_t freq = 8000;
-    uint32_t freqdem = 1000000;
-    Serial.println("Set PLLA to 900MHz");
-    clockgen.setupPLLInt(SI5351_PLL_A, 36);
-    //Serial.println("Set Output #0 to 112.5MHz");
-    //clockgen.setupMultisynthInt(0, SI5351_PLL_A, SI5351_MULTISYNTH_DIV_8);
-
-    /* FRACTIONAL MODE --> More flexible but introduce clock jitter */
-    /* Setup PLLB to fractional mode @616.66667MHz (XTAL * 24 + 2/3) */
-    /* Setup Multisynth 1 to 13.55311MHz (PLLB/45.5) */
-    clockgen.setupPLL(SI5351_PLL_B, 24, 0, 3);        //27MHz * (24 + 0/3) = 648MHz
-    Serial.println("Set Output #1 to 13.553115MHz");
-
-    
-
-  
-
-  /* Multisynth 2 is not yet used and won't be enabled, but can be */
-  /* Use PLLB @ 616.66667MHz, then divide by 900 -> 685.185 KHz */
-  /* then divide by 64 for 10.706 KHz */
-  /* configured using either PLL in either integer or fractional mode */
-
-//   Serial.println("Set Output #2 to 10.706 KHz");
-//   clockgen.setupMultisynth(2, SI5351_PLL_B, 900, 0, 1);
-//   clockgen.setupRdiv(2, SI5351_R_DIV_64);
-
-    /* Enable the clocks */
-    setFrequency(14231000);
-    clockgen.enableOutputs(true);
-    wdt_reset();    //reset the watchdog timer
-    delay(2000);
-
-    setFrequency(14341000);
-    wdt_reset();    //reset the watchdog timer
-    delay(2000);
-
-    setFrequency(21320000);
-    wdt_reset();    //reset the watchdog timer
-    delay(2000);
-
-    setFrequency(28401000);
-    wdt_reset();    //reset the watchdog timer
-    delay(2000);
-
-    wdt_reset();    //reset the watchdog timer
-
-    clockgen.enableOutputs(false);
-    digitalWrite(PIN_PTT_OUT, LOW);    //unkey the transmitter
-  
-
-  //Normally seeing about 280mV of drop during the transmission with a 0.5F supercap - Correction: seeing about 800mV with .5F as of 5/16/2025
-  Tracker.readBatteryVoltage(true);  //read the battery voltage after the transmission
 }
 
+static void sendWSPR() {
+    const uint64_t base_cHz = (uint64_t)Config.getFrequencyTx() * 100ULL;
+
+    Serial.println(F("Xmitting WSPR"));
+
+    si5351.output_enable(SI5351_CLK0, 1);
+    digitalWrite(PIN_PTT_OUT, HIGH);
+
+    for (uint16_t i = 0; i < WSPR_SYMBOL_COUNT; i++)
+    {
+        wdt_reset();
+        const uint8_t sym = wspr_symbols[i] & 0x03;
+        const uint64_t f_cHz = base_cHz + (uint64_t)sym * (uint64_t)WSPR_TONE_SPACING_CENTI_HZ;
+        si5351.set_freq(f_cHz, SI5351_CLK0);
+        delay(WSPR_TONE_MS);
+    }
+
+    si5351.output_enable(SI5351_CLK0, 0);
+    digitalWrite(PIN_PTT_OUT, LOW);
+    Serial.println(F("Xmit complete"));
+}
+
+
+
+
+/*
 void setFrequency(uint32_t freq) {
     uint32_t pllFreq = 648000000;
     uint8_t divider = calcDivider(freq, pllFreq);
@@ -380,6 +294,7 @@ uint32_t calcFractional(uint32_t freq, uint32_t pllFreq, uint8_t divider) {
 
   return (uint32_t)fFractional;
 }
+*/
 
 /**
  * @brief showVersion - Displays the version of the firmware and configuration

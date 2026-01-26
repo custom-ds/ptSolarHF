@@ -57,74 +57,14 @@ void ptConfig::setDefaultConfig() {
     wdt_reset();    //reset the watchdog timer
 
     //Set the unit-specific default configurations
-#ifdef TRACKER_PTFLEX
-    //defaults for the ptFlex
-    strcpy(this->_config.Destination, "APPRJ1");
-    this->_config.DestinationSSID = '0';
-    this->_config.BeaconType = 2;    //0=Simple delay, 1=Speed-based, 2=Altitude-based, 3=Time Slots, 4=Low-power
-    strcpy(this->_config.StatusMessage, "Project Traveler ptFlex");
-    this->_config.I2cBME280 = 1;    //initialize the BME280
-    this->_config.UseGlobalFreq = 0;    //use the global frequency database based on position
-    this->_config.DisableGPSDuringXmit = 0;    //disable the GPS during transmission (to save power)    
-    this->_config.StatusXmitBurstAltitude = 1;
-    this->_config.StatusXmitTemp = 1;
-    this->_config.StatusXmitPressure = 1;
-    this->_config.DelayXmitUntilGPSFix = 1;    //delay transmit up to 1 minute if no GPS fix
-    this->_config.VoltThreshGPS = 1000;    //1.0V
-    this->_config.VoltThreshXmit = 1000;    //1.0V
-    this->_config.AnnounceMode = 3;    //0=No Annunciations, 1=LED, 2=Piezo, 3=Both
-    this->_config.HourlyReboot = 0;    //reboot the system every hour    
-#endif
-#ifdef TRACKER_PTSOLAR
-    //defaults for the ptSolar
-    strcpy(this->_config.Destination, "APPRJ2");
-    this->_config.DestinationSSID = '0';
-    this->_config.BeaconType = 4;    //0=Simple delay, 1=Speed-based, 2=Altitude-based, 3=Time Slots, 4=Low-power
-    strcpy(this->_config.StatusMessage, "Project Traveler ptSolar");
-    this->_config.I2cBME280 = 0;    //initialize the BME280
-    this->_config.UseGlobalFreq = 1;    //use the global frequency database based on position
-    this->_config.DisableGPSDuringXmit = 1;    //disable the GPS during transmission (to save power)    
-    this->_config.StatusXmitBurstAltitude = 0;
-    this->_config.StatusXmitTemp = 0;
-    this->_config.StatusXmitPressure = 0;
-    this->_config.DelayXmitUntilGPSFix = 1;    //delay transmit up to 1 minute if no GPS fix
     this->_config.VoltThreshGPS = 3500;    //3.5V
     this->_config.VoltThreshXmit = 4100;    //4.1V   
     this->_config.AnnounceMode = 1;    //0=No Annunciations, 1=LED, 2=Piezo, 3=Both
-    this->_config.HourlyReboot = 0;    //reboot the system every hour      
-#endif  
-
+    this->_config.HourlyReboot = 0;    //reboot the system every hour   
     strcpy(this->_config.Callsign, "N0CALL");
-    this->_config.CallsignSSID = '0';
-    strcpy(this->_config.Path1, "WIDE2 ");
-    this->_config.Path1SSID = '1';
-    strcpy(this->_config.Path2, "      ");
-    this->_config.Path2SSID = '0';
-    this->_config.DisablePathAboveAltitude = 2000;
-    this->_config.Symbol = 'O';    //letter O for balloons
-    this->_config.SymbolPage = '/';
-    this->_config.BeaconSimpleDelay = 30;
-    this->_config.BeaconSpeedThreshLow = 20;
-    this->_config.BeaconSpeedThreshHigh = 50;
-    this->_config.BeaconSpeedDelayLow = 300;
-    this->_config.BeaconSpeedDelayMid = 60;
-    this->_config.BeaconSpeedDelayHigh = 120;
-    this->_config.BeaconAltitudeThreshLow = 5000;
-    this->_config.BeaconAltitudeThreshHigh = 20000;
-    this->_config.BeaconAltitudeDelayLow  = 30;
-    this->_config.BeaconAltitudeDelayMid  = 60;
-    this->_config.BeaconAltitudeDelayHigh = 45;
-    this->_config.BeaconSlot1 = 15;
-    this->_config.BeaconSlot2 = 45;
-    this->_config.StatusXmitGPSFix = 1;
-    this->_config.StatusXmitBatteryVoltage = 1;
-    this->_config.StatusXmitSeconds = 0;
-    this->_config.StatusXmitCustom = 0;
-    this->_config.RadioTxDelay = 25;
-    this->_config.RadioCourtesyTone = 0;
-    strcpy(this->_config.RadioFreqTx, "144.3900");
-    strcpy(this->_config.RadioFreqRx, "144.3900");
-    this->_config.MinTimeBetweenXmits = 55;    //55 seconds
+    this->_config.FrequencyTx = 28126200UL;   //Default to 10m, 28.1262MHz
+    this->_config.Correction = 0;    //No frequency correction by default
+
     this->_config.CheckSum = 410;		//Checksum for N0CALL
   
     this->writeEEPROM();
@@ -212,154 +152,23 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
     
           this->readConfigParam(szParam, sizeof(this->_config.Callsign));    //Callsign
           strcpy(this->_config.Callsign, szParam);
-          this->readConfigParam(szParam, 1);    //Callsign SSID
-          this->_config.CallsignSSID = szParam[0];
-    
-          this->readConfigParam(szParam, sizeof(this->_config.Destination));    //Destination
-          strcpy(this->_config.Destination, szParam);
-          this->readConfigParam(szParam, 1);    //SSID
-          this->_config.DestinationSSID = szParam[0];
-    
-          this->readConfigParam(szParam, sizeof(this->_config.Path1));    //Path1
-          strcpy(this->_config.Path1, szParam);
-          this->readConfigParam(szParam, 1);    //SSID
-          this->_config.Path1SSID = szParam[0];
-    
-          this->readConfigParam(szParam, sizeof(this->_config.Path2));    //Path2
-          strcpy(this->_config.Path2, szParam);
-          this->readConfigParam(szParam, 1);    //SSID
-          this->_config.Path2SSID = szParam[0];
-    
-          //Cutoff altitude to stop using the path
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.DisablePathAboveAltitude = atoi(szParam);
-    
-          //Symbol/Page
-          this->readConfigParam(szParam, 1);
-          this->_config.Symbol = szParam[0];
-          this->readConfigParam(szParam, 1);
-          this->_config.SymbolPage = szParam[0];
-    
-    
-          //BeaconType
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconType = atoi(szParam);
-    
-          //Simple Beacon Delay
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconSimpleDelay = atoi(szParam);
-    
-          //SpeedBeacon
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconSpeedThreshLow = atoi(szParam);
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconSpeedThreshHigh = atoi(szParam);
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconSpeedDelayLow = atoi(szParam);
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconSpeedDelayMid = atoi(szParam);
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconSpeedDelayHigh = atoi(szParam);
-    
-          //AltitudeBeacon
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconAltitudeThreshLow = atoi(szParam);
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconAltitudeThreshHigh = atoi(szParam);
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconAltitudeDelayLow  = atoi(szParam);
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconAltitudeDelayMid  = atoi(szParam);
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconAltitudeDelayHigh = atoi(szParam);
-    
-          //Time Slots
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconSlot1 = atoi(szParam);
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.BeaconSlot2 = atoi(szParam);
 
-          //Beacon Type 4 Configuration
+    
           this->readConfigParam(szParam, sizeof(szParam));
           this->_config.VoltThreshGPS = atoi(szParam);   //Threshold for voltage before activating the GPS receiver
           this->readConfigParam(szParam, sizeof(szParam));
           this->_config.VoltThreshXmit = atoi(szParam);   //Threshold for voltage before transmitting a packet
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.MinTimeBetweenXmits = atoi(szParam);   //Minimum time between transmissions in the event we have solid voltage
-   
-    
-          //Status Message
-          this->readConfigParam(szParam, sizeof(szParam));
-          strcpy(this->_config.StatusMessage, szParam);
-    
-    
-          //Misc Flags
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.StatusXmitGPSFix = szParam[0] == '1';
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.StatusXmitBurstAltitude = szParam[0] == '1';
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.StatusXmitBatteryVoltage = szParam[0] == '1';
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.StatusXmitTemp = szParam[0] == '1';
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.StatusXmitPressure = szParam[0] == '1';
 
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.StatusXmitSeconds = szParam[0] == '1';
-
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.StatusXmitCustom = szParam[0] == '1';
-    
-                
-          //Radio Configuration    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.RadioTxDelay = atoi(szParam);
-    
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.RadioCourtesyTone = atoi(szParam);    //0=off, 1=on
-    
-          this->readConfigParam(szParam, sizeof(this->_config.RadioFreqTx));    //Transmit Frequency for SA818V
-          strcpy(this->_config.RadioFreqTx, szParam);
+          this->readConfigParam(szParam, sizeof(this->_config.FrequencyTx));    //Transmit Frequency for SA818V
+          strcpy(this->_config.FrequencyTx, szParam);
           
-          this->readConfigParam(szParam, sizeof(this->_config.RadioFreqRx));    //Receive Frequency for SA818V
-          strcpy(this->_config.RadioFreqRx, szParam);
- 
-          //Global Frequency
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.UseGlobalFreq = szParam[0] == '1';
 
+ 
     
           //Annunciator Type
           this->readConfigParam(szParam, sizeof(szParam));
           this->_config.AnnounceMode = atoi(szParam);
     
-          //BME280 Configuration
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.I2cBME280 = szParam[0] == '1';
-
-
-
-          //Disable GPS during transmission
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.DisableGPSDuringXmit = szParam[0] == '1';    //Disable the GPS during transmission
-
-          this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.DelayXmitUntilGPSFix = szParam[0] == '1';   //Delay up to 50 seconds for a GPS fix before transmitting 
-
           //Hourly Reboot
           this->readConfigParam(szParam, sizeof(szParam));
           this->_config.HourlyReboot = szParam[0] == '1';    //Reboot the system every hour
@@ -391,156 +200,22 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
 
     Serial.write(this->_config.Callsign);
     Serial.write(0x09);
-    Serial.write(this->_config.CallsignSSID);
-    Serial.write(0x09);
-    Serial.write(this->_config.Destination);
-    Serial.write(0x09);
-    Serial.write(this->_config.DestinationSSID);
-    Serial.write(0x09);
-    Serial.write(this->_config.Path1);
-    Serial.write(0x09);
-    Serial.write(this->_config.Path1SSID);
-    Serial.write(0x09);
-    Serial.write(this->_config.Path2);
-    Serial.write(0x09);
-    Serial.write(this->_config.Path2SSID);
-    Serial.write(0x09);
-
-    //Allow to disable the path above certain altitude
-    Serial.print(this->_config.DisablePathAboveAltitude, DEC);
-    Serial.write(0x09);
-
-    //Symbol
-    Serial.write(this->_config.Symbol);
-    Serial.write(0x09);
-    Serial.write(this->_config.SymbolPage);
-    Serial.write(0x09);
-
-    //Beacon Type
-    Serial.print(this->_config.BeaconType, DEC);
-    Serial.write(0x09);
-
-
-    //Beacon Type 0 - Simple Delay
-    Serial.print(this->_config.BeaconSimpleDelay, DEC);
-    Serial.write(0x09);
-
-
-    //Beacon Type 1 - Speed Beaconing
-    Serial.print(this->_config.BeaconSpeedThreshLow, DEC);
-    Serial.write(0x09);
-    Serial.print(this->_config.BeaconSpeedThreshHigh, DEC);
-    Serial.write(0x09);
-    Serial.print(this->_config.BeaconSpeedDelayLow, DEC);
-    Serial.write(0x09);
-    Serial.print(this->_config.BeaconSpeedDelayMid, DEC);
-    Serial.write(0x09);
-    Serial.print(this->_config.BeaconSpeedDelayHigh, DEC);
-    Serial.write(0x09);
-
-
-    //Beacon Type 2- Altitude Beaconing
-    Serial.print(this->_config.BeaconAltitudeThreshLow, DEC);
-    Serial.write(0x09);
-    Serial.print(this->_config.BeaconAltitudeThreshHigh, DEC);
-    Serial.write(0x09);
-    Serial.print(this->_config.BeaconAltitudeDelayLow, DEC);
-    Serial.write(0x09);
-    Serial.print(this->_config.BeaconAltitudeDelayMid, DEC);
-    Serial.write(0x09);
-    Serial.print(this->_config.BeaconAltitudeDelayHigh, DEC);
-    Serial.write(0x09);
-
-
-    //Beacon Type 3 - Time Slots
-    Serial.print(this->_config.BeaconSlot1, DEC);
-    Serial.write(0x09);
-    Serial.print(this->_config.BeaconSlot2, DEC);
-    Serial.write(0x09);
-
 
     //Beacon Type 4 - Low-Power Solar
     Serial.print(this->_config.VoltThreshGPS, DEC);
     Serial.write(0x09);
     Serial.print(this->_config.VoltThreshXmit, DEC);
     Serial.write(0x09);
-    Serial.print(this->_config.MinTimeBetweenXmits, DEC);
-    Serial.write(0x09);
-
-
-    //Status Message
-    Serial.write(this->_config.StatusMessage);
-    Serial.write(0x09);
-
-    //Misc Flags
-    if (this->_config.StatusXmitGPSFix) Serial.write("1");
-    else Serial.write("0");
-    Serial.write(0x09);
-
-    if (this->_config.StatusXmitBurstAltitude) Serial.write("1");
-    else Serial.write("0");
-    Serial.write(0x09);
-
-    if (this->_config.StatusXmitBatteryVoltage) Serial.write("1");
-    else Serial.write("0");
-    Serial.write(0x09);
-
-    if (this->_config.StatusXmitTemp) Serial.write("1");
-    else Serial.write("0");
-    Serial.write(0x09);
-
-    if (this->_config.StatusXmitPressure) Serial.write("1");
-    else Serial.write("0");
-    Serial.write(0x09);
-
-    if (this->_config.StatusXmitSeconds) Serial.write("1");
-    else Serial.write("0");
-    Serial.write(0x09);
-
-    if (this->_config.StatusXmitCustom) Serial.write("1");
-    else Serial.write("0");
-    Serial.write(0x09);
-
-
-    //Radio Parameters
-    Serial.print(this->_config.RadioTxDelay, DEC);
-    Serial.write(0x09);
-    
-    if (this->_config.RadioCourtesyTone) Serial.write("1");
-    else Serial.write("0");
-    Serial.write(0x09);               
-
-    Serial.write(this->_config.RadioFreqTx);
-    Serial.write(0x09);
-
-    Serial.write(this->_config.RadioFreqRx);
-    Serial.write(0x09);
-
-    if (this->_config.UseGlobalFreq) Serial.write("1");
-    else Serial.write("0");
-    Serial.write(0x09);    
 
 
     //Misc System Configuration
     Serial.print(this->_config.AnnounceMode, DEC);    //0=No annunciator, 1=LED only, 2=Piezo only, 3=Both
     Serial.write(0x09);
 
-    //BME280 Configuration
-    if (this->_config.I2cBME280) Serial.write("1");
-    else Serial.write("0");
-    Serial.write(0x09);
-
-    //Disable GPS during transmission
-    if (this->_config.DisableGPSDuringXmit) Serial.write("1");
-    else Serial.write("0");
-    Serial.write(0x09);
 
     //Hourly Reboot
     if (this->_config.HourlyReboot) Serial.write("1");
     else Serial.write("0");
-    Serial.write(0x09);
-
-    Serial.print(this->_config.DelayXmitUntilGPSFix, DEC);
     Serial.write(0x04);      //End of string
 
     wdt_reset();    //reset the watchdog timer

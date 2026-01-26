@@ -54,6 +54,7 @@ class GPS
     void addChar(char c);
     void getLatitude(char *sz);
     void getLongitude(char *sz);
+    void getGridSquare(char *sz);
 
    
     inline void getGPSTime(int *Hour, int *Minute, int *Second)
