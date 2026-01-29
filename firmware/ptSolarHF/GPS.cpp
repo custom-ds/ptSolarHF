@@ -1,6 +1,6 @@
 /*
 GPS Data Parser for Project: Traveler Flight Controllers
-Copywrite 2011-2025 - Zack Clobes (W0ZC), Custom Digital Services, LLC
+Copywrite 2011-2026 - Zack Clobes (W0ZC), Custom Digital Services, LLC
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -11,6 +11,11 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Version History:
+Version 2.2.0 - January 26, 2026 - Functionality added to support WSPR mode.
+                  * Added function to calculate Maidenhead grid square from latitude and longitude. 
+				  * Changed time to uint8_t, and set 99 as invalid. 
+				  * Added iLatitude/iLongitudeMicroDeg functions to get lat/lon in microdegrees.
+				  * Reworked forbidden transmit zones.
 Version 2.1.1 - September 25, 2025 - Removed UK from the prohibited transmit areas.
 Version 2.1.0 - July 12, 2025 - Removed support for older uBlox GPS. Fixed bug where GPS was returning excessive precision. Eliminated validateGPSEntence() function.
 Version 2.0.0 - May 9, 2025 - Major rewrite to be more object oriented. Added support for ATGM332 GPS module.
@@ -370,25 +375,41 @@ void GPS::parseRMC() {
 //01234567890123456789012345678901234567890123456789012345678901234567890
 //$GPRMC,224831,A,3805.5827,N,09755.0740,W,000.0,000.0,240806,005.9,E*65
 
-	char sz[9];			//temp var
+	char sz[10];			//temp var
+	char szB[3];			//temp var
 	char* ptrTemp;
-	ptrTemp = &this->_szTemp[7];			//set this pointer to the hours digit
 
+	//Set the szTemp to a testing string
+	//strcpy(this->_szTemp, "$GNRMC,162315.00,A,4630.12340,N,10545.05519,W,0.022,137.11,120624,,,A*7C");
+
+	ptrTemp = &this->_szTemp[7];			//set this pointer to the hours digit
 	
-	strncpy(sz, ptrTemp, 2);
-	sz[2] = 0;		//null terminate the string
-	this->_currTime.hh = atoi(sz);
-	ptrTemp += 2;		//incr the pointer to minutes
-	
-	strncpy(sz, ptrTemp, 2);
-	sz[2] = 0;		//null terminate the string
-	this->_currTime.mm = atoi(sz);
-	ptrTemp += 2;		//incre the pointer to seconds
-	
-	strncpy(sz, ptrTemp, 2);
-	sz[2] = 0;		//null terminate the string
-	this->_currTime.ss = atoi(sz);
-	
+
+
+	getString(ptrTemp, sz, 7);
+
+	if (sz[0] == '\0') {
+		//the time was empty - just return
+		this->_currTime.hh = 99;
+		this->_currTime.mm = 99;
+		this->_currTime.ss = 99;
+	} else {
+		//we have a time - parse it
+		szB[0] = sz[0];
+		szB[1] = sz[1];
+		szB[2] = 0;
+		this->_currTime.hh = atoi(szB);
+
+		szB[0] = sz[2];
+		szB[1] = sz[3];	
+		this->_currTime.mm = atoi(szB);
+
+		szB[0] = sz[4];
+		szB[1] = sz[5];
+		this->_currTime.ss = atoi(szB);
+	}
+
+
 	ptrTemp = this->skipToNext(ptrTemp);			//skip thru the rest of the chars in the time
 
 	//see if we have valid fix (A) or invalid (V)
@@ -448,6 +469,9 @@ void GPS::parseRMC() {
 	
 	//get date
 	this->getString(ptrTemp, this->_szGPSDate, 7);
+
+	this->convertLatLon();		//convert the lat/lon strings to decimal format
+
 }
 
 
@@ -461,27 +485,39 @@ void GPS::parseGGA() {
 	//01234567890123456789012345678901234567890123456789012345678901234567890
 	//$GPGGA,232440   ,3804.3322 ,N,09756.1222 ,W,6,03,2.7,485.1,M,-26.7,M,,*
 	//$GNGGA,162315.00,3805.57830,N,09755.05519,W,1,03,1.86,577.4,M,-26.1,M,,*76
-	char sz[9];			//temp var
+	char sz[10];			//temp var
+	char szB[3];			//temp var
 	
 	char* ptrTemp;
-	
+
+	//Set the szTemp to a testing string
+	//strcpy(this->_szTemp, "$GNGGA,162315.00,4630.12340,N,10545.05519,W,1,03,1.86,15577.4,M,-26.1,M,,*76");
+
 	ptrTemp = &this->_szTemp[7];			//set this pointer to the hours digit
 
-	
-	strncpy(sz, ptrTemp, 2);
-	sz[2] = 0;		//null terminate the string
-	this->_currTime.hh = atoi(sz);
-	ptrTemp += 2;		//incr the pointer to minutes
-	
-	strncpy(sz, ptrTemp, 2);
-	sz[2] = 0;		//null terminate the string
-	this->_currTime.mm = atoi(sz);
-	ptrTemp += 2;		//incre the pointer to seconds
-	
-	strncpy(sz, ptrTemp, 2);
-	sz[2] = 0;		//null terminate the string
-	this->_currTime.ss = atoi(sz);
-	
+	getString(ptrTemp, sz, 7);
+
+	if (sz[0] == '\0') {
+		//the time was empty - just return
+		this->_currTime.hh = 99;
+		this->_currTime.mm = 99;
+		this->_currTime.ss = 99;
+	} else {
+		//we have a time - parse it
+		szB[0] = sz[0];
+		szB[1] = sz[1];
+		szB[2] = 0;
+		this->_currTime.hh = atoi(szB);
+
+		szB[0] = sz[2];
+		szB[1] = sz[3];	
+		this->_currTime.mm = atoi(szB);
+
+		szB[0] = sz[4];
+		szB[1] = sz[5];
+		this->_currTime.ss = atoi(szB);
+	}
+
 	ptrTemp = this->skipToNext(ptrTemp);			//skip thru the rest of the chars in the time
 
 	//get the Latitude
@@ -533,6 +569,8 @@ void GPS::parseGGA() {
 	
 	this->getString(ptrTemp, sz, 8);
 	this->_fAltitude = atof(sz);
+
+	this->convertLatLon();		//convert the lat/lon strings to decimal format
 }
 
 
@@ -559,42 +597,6 @@ void GPS::getString(char *ptrHaystack, char *ptrFound, int iMaxLength) {
 	}
 }
 
-
-/**
- * @brief   Validates the GPS sentence by checking the number of commas and minimum length.
- * @param   szGPSSentence: The GPS sentence to validate.
- * @param   iNumCommas: The expected number of commas in the sentence.
- * @param   iMinLength: The minimum length of the sentence.
- * @return: True if the sentence is valid, false otherwise.
- * @note    This function checks to make sure we have a string that is null terminated, has the appropriate # of commas, and has valid chars within it.
- */
-/*
-bool GPS::validateGPSSentence(char *szGPSSentence, int iNumCommas, int iMinLength) {
-	//checks to make sure we have a string that is null terminated, has the appropriate # of commas, and has valid chars within it
-	// Pass it the string to test, and the number of commas that should be included for this type of string
-	
-	int iCommaCount = 0;
-	int iCharCount = 0;
-	
-	while (szGPSSentence[iCharCount] != '\0' && iCharCount < (_MAX_SENTENCE_LEN+10)) {		///TODO: Remove the +10 - this is just for debugging purposes
-		if (szGPSSentence[iCharCount] == ',') iCommaCount++;			//we found a comma, incre the counter
-		
-		iCharCount++;
-	}
-	Serial.print("Ch: ");
-	Serial.print(iCharCount);
-	Serial.print("  Co: ");
-	Serial.print(iCommaCount);
-
-	if ((iCharCount < iMinLength) || (iNumCommas != iCommaCount)) {
-		Serial.println(F("  Invalid"));
-		return false;
-	}
-	Serial.println(F("  Valid"));
-	//we passed all of the tests - return true
-	return true;
-}
-*/
 
 /**
  * @brief   Skips to the next comma or null character in the string.
@@ -686,15 +688,40 @@ void GPS::getLongitude(char *sz) {
 }
 
 
+
+/**
+ * @brief   Determines if the current GPS location is in a no-transmit zone.
+ * @return: True if in a no-transmit zone, false otherwise.
+ * @note    This function checks the current latitude and longitude against known no-transmit zones (Yemen and North Korea).
+ */
+bool GPS::isRFBlackoutZone() {
+	//Determine if we are in a no-transmit zone based on lat/lon
+	//Convert the latitude and longitude to an integer for comparison
+	// Lat/Lon are in the format ddmm, and range from -9000 to 9000 and -18000 to 18000 respectively
+	int iLat = atoi(this->_szLatitude);
+	int iLon = atoi(this->_szLongitude);
+
+	if (this->_cLatitudeHemi == 'S') iLat = -iLat;    //convert to negative if we're in the southern hemisphere
+	if (this->_cLongitudeHemi == 'W') iLon = -iLon;    //convert to negative if we're in the western hemisphere
+
+
+	//Check for Yemen
+	if (iLat >= 1148 && iLat <= 1912 && iLon >= 4200 && iLon <= 5442) return true;
+
+	//Check for North Korea
+	if (iLat >= 3742 && iLat <= 4306 && iLon >= 13100 && iLon <= 12400) return true;
+
+	return false;	//we're not in a blackout zone
+}
+
 /**
  * @brief   Returns the appopriate APRS frequency for the current location.  This function is used to determine the frequency to use for APRS transmissions.
  * @param   sz: A pointer to a char array to store the frequency in.
  * @return: None.
  * @note    Attempts to determine the frequency based on lat/lon. If there is no valid GPS position, then the function will return the US frequency of 144.390 MHz.
- *            If the position is over the UK, Yemen, or North Korea, a 0.000 MHz frequency is returned indicating that no transmissions should be made.
+ *            If the position is over the Yemen or North Korea, a 0.000 MHz frequency is returned indicating that no transmissions should be made.
  */
 bool GPS::getAPRSFrequency(char *sz) {
-/*
 	
 	uint8_t freqSelected = 99;	//Default to 99, which is the International Space Station frequency of 145.825 MHz
 
@@ -712,10 +739,11 @@ bool GPS::getAPRSFrequency(char *sz) {
 		if (this->_cLongitudeHemi == 'W') iLon = -iLon;    //convert to negative if we're in the western hemisphere
 
 
-		Serial.print(F("Lat: "));
-		Serial.println(iLat);
-		Serial.print(F("Lon: "));
-		Serial.println(iLon);
+		//Check to see if we're in a no-transmit zone
+		if (this->isRFBlackoutZone()) {
+			strcpy(sz, "000.0000");
+			return false;	//we're in a no-transmit zone
+		}
 
 		//The table below is a list of the APRS frequencies for different regions of the world. The ordering must go from least specific, to most specific.
 		// Any transmit-prohibited areas must be listed LAST, or else they will be overridden by the other regions.
@@ -739,17 +767,9 @@ bool GPS::getAPRSFrequency(char *sz) {
 		if (iLat >= 500 && iLat <= 2036 && iLon >= 9700 && iLon <= 10600) freqSelected = 8;    //Thailand on 145.5300MHz
 		if (iLat >= 2200 && iLat <= 2230 && iLon >= 11347 && iLon <= 11430) freqSelected = 2;    //Hong Kong on 144.5250MHz
 		if (iLat >= 4900 && iLat <= 6100 && iLon >= -800 && iLon <= 200) freqSelected = 6;    //UK on 144.8000MHz
-
-		if (iLat >= 1148 && iLat <= 1912 && iLon >= 4200 && iLon <= 5442) freqSelected = 0;    //Yemen on 000.0000MHz
-		if (iLat >= 3742 && iLat <= 4306 && iLon >= 13100 && iLon <= 12400) freqSelected = 0;    //North Korea on 000.0000MHz
-
 	}
 
 	switch (freqSelected) {
-	case 0:
-		//Transmit Prohibited
-		strcpy(sz, "000.0000");
-		break;
 	case 1:
 		//North America, US, Canada, Mexico
 		strcpy(sz, "144.3900");
@@ -795,6 +815,167 @@ bool GPS::getAPRSFrequency(char *sz) {
 		break;
 	}
 	
-	return (freqSelected != 0);		//return false if transmissions are prohibited, true if they are allowed
-	*/
+	return true;		//we can transmit
+
+}
+
+/**
+ * @brief   Calculates the Maidenhead grid square based on the current latitude and longitude.
+ * @param   sz: A pointer to a char array to store the grid square in.
+ * @note: Returns a 6-character Maidenhead grid square.
+ */
+void GPS::getGridSquare(char *sz) {
+
+
+  // Shift into "positive" coordinate space:
+  // lon: [-180..+180] -> [0..360]
+  // lat: [ -90.. +90] -> [0..180]
+  int32_t lon = this->_iLongitude + 180000000L;
+  int32_t lat = this->_iLatitude +  90000000L;
+
+  // ----- Field (A-R) -----
+  // lon field size = 20 deg = 20,000,000 uDeg
+  // lat field size = 10 deg = 10,000,000 uDeg
+  uint8_t fieldLon = lon / 20000000L;
+  uint8_t fieldLat = lat / 10000000L;
+
+  lon -= (int32_t)fieldLon * 20000000L;
+  lat -= (int32_t)fieldLat * 10000000L;
+
+  sz[0] = 'A' + fieldLon;
+  sz[1] = 'A' + fieldLat;
+
+  // ----- Square (0-9) -----
+  // lon square size = 2 deg = 2,000,000 uDeg
+  // lat square size = 1 deg = 1,000,000 uDeg
+  uint8_t squareLon = lon / 2000000L;
+  uint8_t squareLat = lat / 1000000L;
+
+  lon -= (int32_t)squareLon * 2000000L;
+  lat -= (int32_t)squareLat * 1000000L;
+
+  sz[2] = '0' + squareLon;
+  sz[3] = '0' + squareLat;
+
+//   if (precision <= 4) {
+//     out[4] = '\0';
+//     return;
+//   }
+
+  // ----- Subsquare (a-x) -----
+  // lon subsquare size = (2 deg / 24) = 0.083333... deg
+  // in microdegrees: 2,000,000 / 24 = 83,333 (remainder exists)
+  // lat subsquare size = (1 deg / 24) = 0.041666... deg
+  // in microdegrees: 1,000,000 / 24 = 41,666 (remainder exists)
+  //
+  // Use integer division with rounding-safe scaling:
+  // subLon = (lon * 24) / 2,000,000
+  // subLat = (lat * 24) / 1,000,000
+
+  uint8_t subLon = (uint32_t)lon * 24UL / 2000000UL;  // 0..23
+  uint8_t subLat = (uint32_t)lat * 24UL / 1000000UL;  // 0..23
+
+  sz[4] = 'a' + subLon;
+  sz[5] = 'a' + subLat;
+  sz[6] = '\0';
+}
+
+
+/*
+  Convert "ddmm.mmmm" latitude string to signed microdegrees (deg * 1e6).
+  hemi: 'N' or 'S'
+  Example: "3745.1234", 'N'  ->  +37752056 (approx)
+*/
+void GPS::convertLatLon() {
+
+	uint8_t dd;
+	uint8_t mm;
+	uint16_t frac;
+	const char *p;
+	uint32_t min_x10000;
+	uint32_t add_uDeg;
+	uint8_t i;
+	
+Serial.print(F("Lat/Lon "));
+Serial.print(this->_szLatitude);
+Serial.print(F(", "));
+Serial.println(this->_szLongitude);	
+
+
+	if (this->_szLatitude[0] == '\0' || this->_szLongitude[0] == '\0') {
+		//we don't have valid lat/lon strings - just return
+		this->_iLatitude = 0;
+		this->_iLongitude = 0;
+		return;
+	}
+
+	//Latitude
+	// degrees (dd)
+  dd = (uint8_t)((this->_szLatitude[0] - '0') * 10 + (this->_szLatitude[1] - '0'));
+
+  // minutes whole part (mm)
+  mm = (uint8_t)((this->_szLatitude[2] - '0') * 10 + (this->_szLatitude[3] - '0'));
+
+  // fractional minutes (mmmm), up to 4 digits
+  frac = 0;
+  p = this->_szLatitude + 5;
+
+  for (i = 0; i < 4; i++) {
+    char c = *p;
+    if (c >= '0' && c <= '9') { 
+		frac = (uint16_t)(frac * 10 + (c - '0')); 
+		p++; 
+	}
+    else { 
+		frac = (uint16_t)(frac * 10); 
+	} // pad with zeros
+  }
+
+  // minutes in 1e-4 minutes
+  min_x10000 = (uint32_t)mm * 10000UL + (uint32_t)frac;
+
+  // Convert minutes to microdegrees:
+  // microdeg_add = min_x10000 * (1e6 / (60 * 1e4)) = min_x10000 * (5/3)
+  // Use rounding: (x*5 + 1) / 3
+  add_uDeg = (uint32_t)((min_x10000 * 5UL + 1UL) / 3UL);
+
+  this->_iLatitude = (int32_t)dd * 1000000L + (int32_t)add_uDeg;
+  if (this->_cLatitudeHemi == 'S') 
+  	this->_iLatitude = -this->_iLatitude;
+ 
+  
+  //Longitude
+  // degrees (ddd)
+  dd = (uint16_t)((this->_szLongitude[0] - '0') * 100 + (this->_szLongitude[1] - '0') * 10 + (this->_szLongitude[2] - '0'));
+
+  // minutes whole part (mm)
+  mm = (uint8_t)((this->_szLongitude[3] - '0') * 10 + (this->_szLongitude[4] - '0'));
+
+  // fractional minutes (mmmm), up to 4 digits
+  frac = 0;
+  p = this->_szLongitude + 6;
+
+  for (i = 0; i < 4; i++) {
+    char c = *p;
+    if (c >= '0' && c <= '9') { 
+		frac = (uint16_t)(frac * 10 + (c - '0')); 
+		p++; }
+    else { 
+		frac = (uint16_t)(frac * 10); 
+	} // pad with zeros
+  }
+
+  // minutes in 1e-4 minutes
+  min_x10000 = (uint32_t)mm * 10000UL + (uint32_t)frac;
+
+  // microdeg_add = min_x10000 * (5/3), rounded
+  add_uDeg = (uint32_t)((min_x10000 * 5UL + 1UL) / 3UL);
+
+  this->_iLongitude = (int32_t)dd * 1000000L + (int32_t)add_uDeg;
+  if (this->_cLongitudeHemi == 'W') 
+  	this->_iLongitude = -this->_iLongitude;
+
+Serial.print(this->_iLatitude);
+Serial.print(F(", "));
+Serial.println(this->_iLongitude);
 }

@@ -1,6 +1,6 @@
  /*
 Project: Traveler ptSolarHF Firmware
-Copyright 2011-2025 - Zack Clobes (W0ZC), Custom Digital Services, LLC
+Copyright 2011-2026 - Zack Clobes (W0ZC), Custom Digital Services, LLC
 
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ Before programming for the first time, the ATmega fuses must be set.
 */
 
 
-#define FIRMWARE_VERSION "1.6.0"
+#define FIRMWARE_VERSION "1.0.0"
 #define CONFIG_PROMPT "\n\n# "
 #include "BoardDef.h"   //defines if this is a ptFlex, ptSolar, or ptSolarHF PCB board
 
@@ -103,36 +103,33 @@ float fMaxAlt;
  * @note   This function is called once at startup and is used to initialize the board and set up the hardware.
  */
 void setup() {
-  Serial.begin(19200);
+    Serial.begin(19200);
 
-  wdt_disable();    //disable the watchdog timer by default
-  #ifdef WATCHDOG
+    wdt_disable();    //disable the watchdog timer by default
+    #ifdef WATCHDOG
     wdt_enable(WDTO_8S);    //Enable the Watchdog if configured
-  #endif
+    #endif
 
-  wdt_reset();    //reset the watchdog timer (even if we're not using it)
-  showVersion();    //show the version of the firmware that we're running
+    wdt_reset();    //reset the watchdog timer (even if we're not using it)
+    showVersion();    //show the version of the firmware that we're running
 
 
-  //Init some variables
-  fMaxAlt = 0;
-  bHasBurst = false;
+    //Init some variables
+    fMaxAlt = 0;
+    bHasBurst = false;
 
-  Tracker.annunciate('k');
+    Tracker.annunciate('k');
 
     wdt_reset();
 
-    Serial.println(F("Initializing Si5351..."));
+    Serial.println(F("Init Si5351"));
     si5351.init(SI5351_CRYSTAL_LOAD_10PF, 27000000, 0);
     si5351.set_correction(Config.getCorrection(), SI5351_PLL_INPUT_XO);
     si5351.drive_strength(SI5351_CLK0, SI5351_CLK0_DRIVE);
-    si5351.output_enable(SI5351_CLK0, 0);
+    si5351.output_enable(SI5351_CLK0, 0);       //Turn off any outputs for now
 
-
- 
-  
-  GPSParser.setDebugNEMA(true);    ///TODO: Need to pull this from Configuration
-  GPSParser.setDebugLevel(2);    //Get full verbose output from the GPS
+    GPSParser.setDebugNEMA(true);    ///TODO: Need to pull this from Configuration
+    GPSParser.setDebugLevel(2);    //Get full verbose output from the GPS
 }
 
 
@@ -142,103 +139,134 @@ void setup() {
  */
 void loop() {
 
-  float fCurrentAlt, fSpeed, fMaxSpeed;
-  unsigned long battMillivolts;
-  bool bXmit;             //Flag to indicate whether or not we should transmit this time around
-  bool bXmitPermitted;    //Flag that can be set to false to prevent transmission, such as when we're in a country that doesn't allow APRS
-  int iSeconds;
-  unsigned long msDelay;    //calculate the number of milliseconds to delay
-  byte byTemp;
-  char szFreq[9];    //The frequency to transmit on
+    unsigned long battMillivolts;
+    bool bXmit; // Flag to indicate whether or not we should transmit this time around
 
-
-  wdt_reset();
-  
-  //Check to see if we have a command from the serial port to indicate that we need to enter config mode
-  if (Serial.available()) {
-    byTemp = Serial.read();
-    if (byTemp == '!') {
-      doConfigMode();
-    }
-  }
-
-  //Reboot the system hourly if configured to do so
-  if (Config.getRebootHourly()) {
-    //Reboot if we've been running for 60 minutes
-    if (millis() > 3600000) {
-      //we've been running for 60 minutes - reboot the system
-      Serial.println(F("60min Reboot"));
-      delay(1000);
-      Tracker.reboot();
-    }
-  }
-
-  battMillivolts = (unsigned long)(Tracker.readBatteryVoltage(true) * 1000);  //read the battery voltage and spit it out to the serial port
-
-  //check to see if we have sufficient battery to run the GPS
-  if (battMillivolts >= Config.getVoltThreshGPS()) {
-    GPSParser.enableGPS(true);    //enable the GPS module if it's not already. If it wasn't enabled, this will also initialize it.
-
-    GPSParser.collectGPSStrings();
-    fCurrentAlt = GPSParser.Altitude();        //get the current altitude
-    if (fCurrentAlt > fMaxAlt) {
-      fMaxAlt = fCurrentAlt;
-    } else {
-      if (fMaxAlt > 10000 && (fCurrentAlt < (fMaxAlt - 250))) {
-        //Check for burst.  The Burst must be at least 10,000m MSL.
-        // To sense a burst, the controller must have fallen at least 250m from the max altitude
-  
-        bHasBurst = true;
-      }
-    }
-  } else {
-    //See if the Battery has dropped 100mV below the threshold.  If so, disable the GPS until the battery comes back up
-    if (battMillivolts < (Config.getVoltThreshGPS() - 100)) {
-      //we don't have enough battery to run the GPS - disable it
-      Serial.println(F("Disabling GPS"));
-      GPSParser.disableGPS();
-    }
-    Serial.println(F("Low Batt, no GPS"));
-    delay(750);   //wait for about the amount of time that we'd normally spend grabbing a GPS reading
-  }
-
-  bXmit = false;    //assume that we won't transmit this time around
-
- 
-
-  
-  if (bXmit) {
-    buildWSPRSymbols();
-    sendWSPR();
-
-    if (!GPSParser.FixQuality() || GPSParser.NumSats() < 4) {
-      //we are having GPS fix issues - issue an annunciation
-      Tracker.annunciate('l');
-    }
-  }
-
-
-}
-
-
-
-static void buildWSPRSymbols() {
-    char pwr_str[4];
+    int iSeconds, iMinutes, iHours;
+    byte byTemp;
 
     wdt_reset();
-    static uint8_t PWR_dBm = 23;
-    itoa(PWR_dBm, pwr_str, 10);
 
-    char GRID[7];
-    GPSParser.getGridSquare(GRID);
-    uint8_t mtype = wspr_enc(Config.getCallsign(), GRID, pwr_str, wspr_symbols); // fills 162 symbols
+    // Check to see if we have a command from the serial port to indicate that we need to enter config mode
+    if (Serial.available())
+    {
+        byTemp = Serial.read();
+        if (byTemp == '!') 
+        {
+            doConfigMode();
+        }
+    }
 
+    // Reboot the system hourly if configured to do so
+    if (Config.getRebootHourly())
+    {
+        // Reboot if we've been running for 60 minutes
+        if (millis() > 3600000)
+        {
+            // we've been running for 60 minutes - reboot the system
+            Serial.println(F("60min Reboot"));
+            delay(1000);
+            Tracker.reboot();
+        }
+    }
+
+    battMillivolts = (unsigned long)(Tracker.readBatteryVoltage(true) * 1000); // read the battery voltage and spit it out to the serial port
+
+    // check to see if we have sufficient battery to run the GPS
+    if (battMillivolts >= Config.getVoltThreshGPS())
+    {
+        GPSParser.enableGPS(true); // enable the GPS module if it's not already. If it wasn't enabled, this will also initialize it.
+        GPSParser.collectGPSStrings();
+    }
+    else
+    {
+        // See if the Battery has dropped 100mV below the threshold.  If so, disable the GPS until the battery comes back up
+        if (battMillivolts < (Config.getVoltThreshGPS() - 100))
+        {
+            // we don't have enough battery to run the GPS - disable it
+            Serial.println(F("Disabling GPS"));
+            GPSParser.disableGPS();
+        }
+        Serial.println(F("Low Batt, no GPS"));
+        delay(750); // wait for about the amount of time that we'd normally spend grabbing a GPS reading
+    }
+
+    bXmit = false; // assume that we won't transmit this time around
+    GPSParser.getGPSTime(&iHours, &iMinutes, &iSeconds);
+    if (iSeconds == 0 && iMinutes % 2 == 0) {
+
+        // it's the top of the event minute - see if we have enough battery to transmit
+        if (battMillivolts >= Config.getVoltThreshXmit())
+        {
+            bXmit = true; // we have enough battery to transmit
+        }
+        else
+        {
+            Serial.println(F("Low Batt, no Xmit"));
+        }
+    }
+
+    if (bXmit)
+    {
+        //Make sure we aren't in forbidden transmit zones
+        if (!GPSParser.isRFBlackoutZone()) {
+            buildWSPRSymbols();
+            sendWSPR();
+
+            if (!GPSParser.FixQuality() || GPSParser.NumSats() < 4) {
+                // we are having GPS fix issues - issue an annunciation
+                Tracker.annunciate('l');
+            }
+        }
+    }
 }
 
+
+/**
+ * @brief   Constructs the WSPR symbols (packet) to be transmitted based on the current GPS data and configuration.
+ * @note    Once the symbols are built, they are stored in the global wspr_symbols array.
+ */
+static void buildWSPRSymbols() {
+    char szAltitude[4];
+    char szGrid[7];
+
+    wdt_reset();
+
+
+
+    // char *ptrCallsign = Config.getCallsign();
+    // strncpy(szCallsign, ptrCallsign, 6);
+
+    //Calculate the coarse altitude for WSPR encoding
+    itoa(GPSParser.AltitudeWSPRCoarse(), szAltitude, 10);
+
+    //Get the Maidenhead grid square
+    GPSParser.getGridSquare(szGrid);
+    
+
+    
+    Serial.println(F("build"));
+    Serial.print(F("Call: "));
+    Serial.println(Config.getCallsign());
+    Serial.print(F("Grid: "));
+    Serial.println(szGrid);
+    Serial.print(F("Alt: "));
+    Serial.println(szAltitude);
+
+
+    //Build the WSPR symbols
+    uint8_t mtype = wspr_enc(Config.getCallsign(), szGrid, szAltitude, wspr_symbols); 
+}
+
+
+/**
+ * @brief   Transmits the WSPR symbols that were previously built using the Si5351 clock generator.
+ * @note    This function will transmit the WSPR symbols stored in the global wspr_symbols array. It takes about 111 seconds to transmit the entire packet.
+ */
 static void sendWSPR() {
     const uint64_t base_cHz = (uint64_t)Config.getFrequencyTx() * 100ULL;
 
-    Serial.println(F("Xmitting WSPR"));
+    Serial.println(F("Xmit WSPR"));
 
     si5351.output_enable(SI5351_CLK0, 1);
     digitalWrite(PIN_PTT_OUT, HIGH);
@@ -254,7 +282,7 @@ static void sendWSPR() {
 
     si5351.output_enable(SI5351_CLK0, 0);
     digitalWrite(PIN_PTT_OUT, LOW);
-    Serial.println(F("Xmit complete"));
+    Serial.println(F("Done"));
 }
 
 
@@ -413,7 +441,7 @@ void doConfigMode() {
       if (byTemp == 'P' || byTemp == 'p') {
         //Send a test packet
         Serial.println(F("Test Packet"));
-
+        buildWSPRSymbols();
         sendWSPR();
         Tracker.readBatteryVoltage(true);  //read the battery voltage after the transmission
       }

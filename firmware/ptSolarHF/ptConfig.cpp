@@ -1,6 +1,6 @@
 /*
 A Configuration object to storing settings for Project: Traveler Flight Controllers
-Copyright 2011-2025 - Zack Clobes (W0ZC), Custom Digital Services, LLC
+Copyright 2011-2026 - Zack Clobes (W0ZC), Custom Digital Services, LLC
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -11,6 +11,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Version History:
+Version 1.2.0 - January 28, 2026 - Added config version 0200 mode for WSPR support.
 Version 1.1.1 - July 20, 2025 - Synchronized the ptFlex and ptSolar code bases to be parameterized by the TRACKER_PTFLEX and TRACKER_PTSOLAR defines.
 Version 1.1.0 - July 12, 2025 - Updated to PT0101 configuration format, which simplied a few unused parameters.
 Version 1.0.0 - March 9, 2025 - Initial Release.
@@ -58,10 +59,11 @@ void ptConfig::setDefaultConfig() {
 
     //Set the unit-specific default configurations
     this->_config.VoltThreshGPS = 3500;    //3.5V
-    this->_config.VoltThreshXmit = 4100;    //4.1V   
+    this->_config.VoltThreshXmit = 3600;    //3.6V   
     this->_config.AnnounceMode = 1;    //0=No Annunciations, 1=LED, 2=Piezo, 3=Both
     this->_config.HourlyReboot = 0;    //reboot the system every hour   
-    strcpy(this->_config.Callsign, "N0CALL");
+    //strcpy(this->_config.Callsign, "N0CALL");
+    strcpy(this->_config.Callsign, "W0ZC");
     this->_config.FrequencyTx = 28126200UL;   //Default to 10m, 28.1262MHz
     this->_config.Correction = 0;    //No frequency correction by default
 

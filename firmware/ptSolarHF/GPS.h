@@ -1,6 +1,6 @@
 /*
 GPS Data Parser for Project: Traveler Flight Controllers
-Copywrite 2011-2025 - Zack Clobes (W0ZC), Custom Digital Services, LLC
+Copywrite 2011-2026 - Zack Clobes (W0ZC), Custom Digital Services, LLC
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -36,9 +36,9 @@ You should have received a copy of the GNU General Public License along with thi
 #define UNKNOWN_PIN 0xFF
 
 struct udtTime {
-  int hh;
-  int mm;
-  int ss;
+  uint8_t hh;
+  uint8_t mm;
+  uint8_t ss;
 };
 
 class GPS
@@ -54,7 +54,6 @@ class GPS
     void addChar(char c);
     void getLatitude(char *sz);
     void getLongitude(char *sz);
-    void getGridSquare(char *sz);
 
    
     inline void getGPSTime(int *Hour, int *Minute, int *Second)
@@ -64,9 +63,9 @@ class GPS
     		*Minute = _currTime.mm;
     		*Second = _currTime.ss;    		
     	} else {
-    		*Hour = 0;
-    		*Minute = 0;
-    		*Second = 0;
+    		*Hour = 99;
+    		*Minute = 99;
+    		*Second = 99;
     	}
     }	
     
@@ -74,7 +73,7 @@ class GPS
       if (_bGGAComplete || _bRMCComplete) {
         return _currTime.ss;
       } else {
-        return -100;      //return an invalid seconds value to show that there was a problem
+        return 99;      //return an invalid seconds value to show that there was a problem
       }
     }		
 
@@ -102,6 +101,11 @@ class GPS
       if (_bGGAComplete) return (_fAltitude * _METERS_TO_FEET);
       else return 0;
     }
+    inline uint8_t AltitudeWSPRCoarse() {
+      if (_fAltitude < 18000.0) return (int(_fAltitude / 18000.0 * 61 ));
+      else return 60;
+    }
+
     inline float Knots() { 
     	if (_bRMCComplete) return _fKnots;
     	else return 0;
@@ -135,7 +139,9 @@ class GPS
     inline void setDebugNEMA(bool output) { _outputNEMA = output; }
 
     void setDebugLevel(uint8_t level) { _debugLevel = level; }
+    bool isRFBlackoutZone();
     bool getAPRSFrequency(char *sz);
+    void getGridSquare(char *sz);
 
 	private:
 		void parseGGA();
@@ -144,6 +150,7 @@ class GPS
 		void getString(char *ptrHaystack, char *ptrFound, int iMaxLength);
 	  char* skipToNext(char *ptr);
     uint8_t getPinMode(uint8_t pin);
+    void convertLatLon();
 	  
 	  
 		// Private variables
@@ -156,6 +163,8 @@ class GPS
 		char _cLatitudeHemi;
 		char _szLongitude[_MAX_LONGITUDE_LEN];
 		char _cLongitudeHemi;
+    int32_t _iLatitude;
+    int32_t _iLongitude;
 		int _iFixQuality;
 		bool _bFixValid;
 		int _iNumSats;
