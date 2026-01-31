@@ -824,8 +824,9 @@ bool GPS::getAPRSFrequency(char *sz) {
  * @param   sz: A pointer to a char array to store the grid square in.
  * @note: Returns a 6-character Maidenhead grid square.
  */
-void GPS::getGridSquare(char *sz) {
+void GPS::getGridSquare(char *sz, uint8_t precision) {
 
+	if (precision != 6) precision = 4;
 
   // Shift into "positive" coordinate space:
   // lon: [-180..+180] -> [0..360]
@@ -857,10 +858,10 @@ void GPS::getGridSquare(char *sz) {
   sz[2] = '0' + squareLon;
   sz[3] = '0' + squareLat;
 
-//   if (precision <= 4) {
-//     out[4] = '\0';
-//     return;
-//   }
+  if (precision <= 4) {
+    sz[4] = '\0';
+    return;
+  }
 
   // ----- Subsquare (a-x) -----
   // lon subsquare size = (2 deg / 24) = 0.083333... deg

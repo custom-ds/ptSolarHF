@@ -141,7 +141,7 @@ class GPS
     void setDebugLevel(uint8_t level) { _debugLevel = level; }
     bool isRFBlackoutZone();
     bool getAPRSFrequency(char *sz);
-    void getGridSquare(char *sz);
+    void getGridSquare(char *sz, uint8_t precision);
 
 	private:
 		void parseGGA();

@@ -62,10 +62,13 @@ void ptConfig::setDefaultConfig() {
     this->_config.VoltThreshXmit = 3600;    //3.6V   
     this->_config.AnnounceMode = 1;    //0=No Annunciations, 1=LED, 2=Piezo, 3=Both
     this->_config.HourlyReboot = 0;    //reboot the system every hour   
-    //strcpy(this->_config.Callsign, "N0CALL");
-    strcpy(this->_config.Callsign, "W0ZC");
-    this->_config.FrequencyTx = 28126200UL;   //Default to 10m, 28.1262MHz
+    strcpy(this->_config.Callsign, "N0CALL");
+    this->_config.FrequencyTx1 = 28126100UL;   //Default to 10m, 28.1261MHz
+    this->_config.FrequencyTx2 = 21093000UL;   //Default to 20m, 14.0970MHz
     this->_config.Correction = 0;    //No frequency correction by default
+    this->_config.WSPRMessageType = 0;    //Standard WSPR message
+    this->_config.TxMod = 4;    //Transmit every 4 minutes (minutes modulus 4)
+    this->_config.TxModOffset = 0;    //No offset
 
     this->_config.CheckSum = 410;		//Checksum for N0CALL
   
@@ -143,7 +146,7 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
     
           //we have the start to a config string
     
-          this->readConfigParam(szParam, sizeof(szParam));    //should be PT01xx for the ptSolar
+          this->readConfigParam(szParam, sizeof(szParam));    //should be PT0200 for the ptSolarHF
           if (strcmp(szParam, CONFIG_VERSION) != 0) {
             //not a config string
             Serial.println(F("No Config Type"));
@@ -155,28 +158,36 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
           this->readConfigParam(szParam, sizeof(this->_config.Callsign));    //Callsign
           strcpy(this->_config.Callsign, szParam);
 
-    
           this->readConfigParam(szParam, sizeof(szParam));
           this->_config.VoltThreshGPS = atoi(szParam);   //Threshold for voltage before activating the GPS receiver
+
           this->readConfigParam(szParam, sizeof(szParam));
           this->_config.VoltThreshXmit = atoi(szParam);   //Threshold for voltage before transmitting a packet
 
-          this->readConfigParam(szParam, sizeof(this->_config.FrequencyTx));    //Transmit Frequency for SA818V
-          strcpy(this->_config.FrequencyTx, szParam);
-          
+          this->readConfigParam(szParam, 9);    //Transmit Frequency for si5351 //Up to 9 digits, which is well within the range of a unsigned 32-bit integer
+          this->_config.FrequencyTx1 = this->atou32(szParam);
 
- 
-    
-          //Annunciator Type
+          this->readConfigParam(szParam, 9);    //Transmit Frequency for si5351 (secondary) //Up to 9 digits, which is well within the range of a unsigned 32-bit integer
+          this->_config.FrequencyTx2 = this->atou32(szParam);
+
+          this->readConfigParam(szParam, 9);    //Up to 9 digits, which is well within the range of a signed 32-bit integer
+          this->_config.Correction = this->atoi32(szParam);    //Frequency correction in parts per billion
+
           this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.AnnounceMode = atoi(szParam);
-    
-          //Hourly Reboot
+          this->_config.AnnounceMode = atoi(szParam);   //Annunciator Type
+
+          this->readConfigParam(szParam, sizeof(szParam));
+          this->_config.WSPRMessageType = atoi(szParam);    //WSPR Message Type
+
+          this->readConfigParam(szParam, sizeof(szParam));
+          this->_config.TxMod = atoi(szParam);    //Transmit Modulus
+
+          this->readConfigParam(szParam, sizeof(szParam));
+          this->_config.TxModOffset = atoi(szParam);    //Transmit Modulus Offset
+
           this->readConfigParam(szParam, sizeof(szParam));
           this->_config.HourlyReboot = szParam[0] == '1';    //Reboot the system every hour
     
-
-
           unsigned int iCheckSum = 0;
           for (int i=0; i<7; i++) {
             iCheckSum += this->_config.Callsign[i];
@@ -203,20 +214,32 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
     Serial.write(this->_config.Callsign);
     Serial.write(0x09);
 
-    //Beacon Type 4 - Low-Power Solar
+    //Voltage Thresholds
     Serial.print(this->_config.VoltThreshGPS, DEC);
     Serial.write(0x09);
     Serial.print(this->_config.VoltThreshXmit, DEC);
     Serial.write(0x09);
 
+    //Transmit Frequencies
+    Serial.print(this->_config.FrequencyTx1, DEC);
+    Serial.write(0x09);
+    Serial.print(this->_config.FrequencyTx2, DEC);
+    Serial.write(0x09);
+    Serial.print(this->_config.Correction, DEC);    //Frequency Correction
+    Serial.write(0x09);
 
-    //Misc System Configuration
     Serial.print(this->_config.AnnounceMode, DEC);    //0=No annunciator, 1=LED only, 2=Piezo only, 3=Both
     Serial.write(0x09);
 
-
-    //Hourly Reboot
-    if (this->_config.HourlyReboot) Serial.write("1");
+    //Transmit timings
+    Serial.print(this->_config.WSPRMessageType, DEC);    //WSPR Message Type
+    Serial.write(0x09);
+    Serial.print(this->_config.TxMod, DEC);    //Transmit Modulus
+    Serial.write(0x09);
+    Serial.print(this->_config.TxModOffset, DEC);    //Transmit Modulus Offset
+    Serial.write(0x09);
+    
+    if (this->_config.HourlyReboot) Serial.write("1");    //Hourly Reboot
     else Serial.write("0");
     Serial.write(0x04);      //End of string
 
@@ -224,3 +247,33 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
     Serial.flush();     //Wait for the serial port to finish sending the data
 
   }
+
+
+uint32_t ptConfig::atou32(const char *s) {
+    uint32_t value = 0;
+
+    while (*s >= '0' && *s <= '9') {
+        value = value * 10u + (uint32_t)(*s - '0');
+        s++;
+    }
+
+    return value;
+}
+
+int32_t ptConfig::atoi32(const char *s) {
+    int32_t value = 0;
+    bool isNegative = false;
+
+    // Check for negative sign
+    if (*s == '-') {
+        isNegative = true;
+        s++;
+    }
+
+    while (*s >= '0' && *s <= '9') {
+        value = value * 10 + (int32_t)(*s - '0');
+        s++;
+    }
+
+    return isNegative ? -value : value;
+}

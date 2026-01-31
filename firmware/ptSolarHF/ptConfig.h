@@ -43,18 +43,18 @@ class ptConfig {
       //Getters and Setters
       char* getCallsign() { return _config.Callsign; }
       void setCallsign(char* callsign) { strcpy(_config.Callsign, callsign); }
-  
-      bool getRebootHourly() { return _config.HourlyReboot; }
-      void setRebootHourly(bool reboot) { _config.HourlyReboot = reboot; }      
-  
+    
       unsigned int getVoltThreshGPS() { return _config.VoltThreshGPS; }
       void setVoltThreshGPS(unsigned int thresh) { _config.VoltThreshGPS = thresh; }
   
       unsigned int getVoltThreshXmit() { return _config.VoltThreshXmit; }
       void setVoltThreshXmit(unsigned int thresh) { _config.VoltThreshXmit = thresh; }
   
-      uint32_t getFrequencyTx() { return _config.FrequencyTx; }
-      void setFrequencyTx(uint32_t freq) { _config.FrequencyTx = freq; }
+      uint32_t getFrequencyTx1() { return _config.FrequencyTx1; }
+      void setFrequencyTx1(uint32_t freq) { _config.FrequencyTx1 = freq; }
+
+      uint32_t getFrequencyTx2() { return _config.FrequencyTx2; }
+      void setFrequencyTx2(uint32_t freq) { _config.FrequencyTx2 = freq; }
 
       int32_t getCorrection() { return _config.Correction; }
       void setCorrection(int32_t corr) { _config.Correction = corr; }
@@ -62,19 +62,41 @@ class ptConfig {
       uint8_t getAnnounceMode() { return _config.AnnounceMode; }
       void setAnnounceMode(uint8_t mode) { _config.AnnounceMode = mode; }
 
+      uint8_t getWSPRMessageType() { return _config.WSPRMessageType; }
+      void setWSPRMessageType(uint8_t type) { _config.WSPRMessageType = type; }
+
+      uint8_t getTxMod() { return _config.TxMod; }
+      void setTxMod(uint8_t mod) { _config.TxMod = mod; }
+
+      uint8_t getTxModOffset() { return _config.TxModOffset; }
+      void setTxModOffset(uint8_t offset) { _config.TxModOffset = offset; }
+
+      bool getRebootHourly() { return _config.HourlyReboot; }
+      void setRebootHourly(bool reboot) { _config.HourlyReboot = reboot; }
+
       unsigned int getCheckSum() { return _config.CheckSum; }
       void setCheckSum(unsigned int sum) { _config.CheckSum = sum; }
   
   private:
-    // Private Variables
+    uint32_t atou32(const char* str);
+    int32_t atoi32(const char *s);
 
+    // Private Variables
     struct udtConfig {
-        char Callsign[7];    //6 digit callsign + Null
+        char Callsign[11];    //10 digit callsign + Null
         unsigned int VoltThreshGPS;    //The voltage threshold to activate the GPS and read a position (in millivolts)
         unsigned int VoltThreshXmit;    //The voltage threshold to transmit a packet (in millivolts)
-        uint32_t FrequencyTx;    //The transmit frequency in Hz
+        uint32_t FrequencyTx1;    //The transmit frequency in Hz
+        uint32_t FrequencyTx2;    //The transmit frequency in Hz (secondary, for dual frequency operation)
         int32_t Correction;    //Frequency correction in parts per billion
-        uint8_t AnnounceMode;    //0=No annunciator, 1=LED only, 2=Piezo only, 3=Both
+        uint8_t AnnounceMode;    //0=No annunciator, 1=LED only
+        uint8_t WSPRMessageType;    //Type of WSPR message to send - 
+                        // 0 = Type 1 - Standard WSPR message with callsign, 4-digit grid square, and altitude
+                        // 1 = Type 2/Type 3 - Compressed WSPR message with callsign, 6-digit grid square, and altitude pair
+                        // 10 = Type 1 message, same as 0 except alternating between the two transmit frequencies
+                        // 11 = Type 2/Type 3 message, same as 1 except alternating between the two transmit frequencies
+        uint8_t TxMod;    //How often to transmit = 2=every 2 minutes, 4=every 4 minutes, etc. Must be a multiple of 2
+        uint8_t TxModOffset;    //Offset within the TxMod to transmit on.  For example, if TxMod=4 and TxModOffset=2, it will transmit at minutes 2, 6, 10, etc.
         bool HourlyReboot;
 
         unsigned int CheckSum;    //sum of the callsign element.  If it doesn't match, then it reinitializes the EEPROM
