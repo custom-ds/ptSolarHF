@@ -897,10 +897,10 @@ void GPS::convertLatLon() {
 	uint32_t add_uDeg;
 	uint8_t i;
 	
-Serial.print(F("Lat/Lon "));
-Serial.print(this->_szLatitude);
-Serial.print(F(", "));
-Serial.println(this->_szLongitude);	
+// Serial.print(F("Lat/Lon "));
+// Serial.print(this->_szLatitude);
+// Serial.print(F(", "));
+// Serial.println(this->_szLongitude);	
 
 
 	if (this->_szLatitude[0] == '\0' || this->_szLongitude[0] == '\0') {
@@ -976,7 +976,7 @@ Serial.println(this->_szLongitude);
   if (this->_cLongitudeHemi == 'W') 
   	this->_iLongitude = -this->_iLongitude;
 
-Serial.print(this->_iLatitude);
-Serial.print(F(", "));
-Serial.println(this->_iLongitude);
+// Serial.print(this->_iLatitude);
+// Serial.print(F(", "));
+// Serial.println(this->_iLongitude);
 }

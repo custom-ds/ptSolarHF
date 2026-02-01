@@ -103,6 +103,8 @@ enum XmitState{
     XMIT_TYPE2,
     XMIT_TYPE3
 };
+XmitState xmitState = NO_XMIT;
+XmitState nextXmitState = NO_XMIT;
 
 /**
  * @brief  The function that runs first before the main loop() function is called indefinitely.
@@ -149,8 +151,7 @@ void setup() {
 void loop() {
 
     unsigned long battMillivolts;
-    XmitState xmitState = NO_XMIT;
-    XmitState nextXmitState = NO_XMIT;
+
 
     int iSeconds, iMinutes, iHours;
     byte byTemp;
@@ -205,12 +206,14 @@ void loop() {
     GPSParser.getGPSTime(&iHours, &iMinutes, &iSeconds);
     if (iSeconds <= 2 && iMinutes % 2 == 0) 
     {
+        Serial.println(F("Top of minute"));
 
         if (nextXmitState != NO_XMIT)
         {
             // We have a pending transmit state from the last time we checked - use that instead
             xmitState = nextXmitState;
             nextXmitState = NO_XMIT;
+            Serial.println(F("Xmit from next state"));
         }
         else
         {
@@ -223,51 +226,63 @@ void loop() {
                     // Type 1 message
                     xmitState = XMIT_TYPE1;
                     nextXmitState = NO_XMIT;
+                    Serial.println(F("Xmit 1"));
                 }
                 else if (Config.getWSPRMessageType() == 1 || Config.getWSPRMessageType() == 11)
                 {
                     // Type 2 message
                     xmitState = XMIT_TYPE2;
                     nextXmitState = XMIT_TYPE3;
+                    Serial.println(F("Xmit 2 then 3"));
                 }
             }
         }
     }
 
-    //Check for reasons not to transmit
-    //GPS Lock
-    if (!GPSParser.FixQuality() || GPSParser.NumSats() < 4) {
-        // we are having GPS fix issues - do not transmit
-        xmitState = NO_XMIT;
-        nextXmitState = NO_XMIT;
-        Serial.println(F("No GPS Fix, no Xmit"));
-    } 
-    
-    //Forbidden Zones
-    if (GPSParser.isRFBlackoutZone()) {
-        xmitState = NO_XMIT;
-        nextXmitState = NO_XMIT;
-        Serial.println(F("Forbidden Zone, no Xmit"));
-    }
+
     
     
 
     if (xmitState != NO_XMIT)
     {
+        //Check for reasons not to transmit
+        //GPS Lock
+        if (!GPSParser.FixQuality() || GPSParser.NumSats() < 4) {
+            // we are having GPS fix issues - do not transmit
+            xmitState = NO_XMIT;
+            nextXmitState = NO_XMIT;
+            Serial.println(F("No GPS Fix, no Xmit"));
+        } 
+        
+        //Forbidden Zones
+        if (GPSParser.isRFBlackoutZone()) {
+            xmitState = NO_XMIT;
+            nextXmitState = NO_XMIT;
+            Serial.println(F("Forbidden Zone, no Xmit"));
+        }
+
+
+        //If there's still a valid transmit state, go ahead and build and send the WSPR packet
         if (xmitState == XMIT_TYPE1)
         {
+            Serial.println(F("Xmit Type 1"));
             buildWSPRSymbols(1);
+            sendWSPR();
         }
         else if (xmitState == XMIT_TYPE2)
         {
+            Serial.println(F("Xmit Type 2"));
             buildWSPRSymbols(2);
+            sendWSPR();
         }
         else if (xmitState == XMIT_TYPE3)
         {
+            Serial.println(F("Xmit Type 3"));
             buildWSPRSymbols(3);
+            sendWSPR();
         }
 
-        sendWSPR();
+        
 
         xmitState = NO_XMIT;
     }
@@ -284,17 +299,25 @@ static void buildWSPRSymbols(uint8_t msgType) {
 
     wdt_reset();
 
+    Serial.print(F("Build WSPR Type "));
+    Serial.println(msgType);
     //Calculate the coarse altitude for WSPR encoding
     itoa(GPSParser.AltitudeWSPRCoarse(), szAltitude, 10);
 
-    if (msgType == 1) {
+    if (msgType < 3) {
         //Get the Maidenhead grid square
         GPSParser.getGridSquare(szGrid, 4);
     } else {
         //Type 2/3 message - 6 character grid square
         GPSParser.getGridSquare(szGrid, 6);
     }
-    
+    //Message type gets infered from the following logic:
+    // Type 1 - If a standard 4-character grid square is used and a "normal" callsign which is <= 6 characters and no slashes
+    // Type 2 - If a standard 4-character grid square is used and a "special" callsign which is > 6 characters or has a slash
+    // Type 3 - If a 6-character grid square is used
+    //
+    // Convention states that a type 2 and type 3 message should be used together to convey more information.
+
 
     
     Serial.println(F("build"));
@@ -308,6 +331,8 @@ static void buildWSPRSymbols(uint8_t msgType) {
 
     //Build the WSPR symbols
     uint8_t mtype = wspr_enc(Config.getCallsign(), szGrid, szAltitude, wspr_symbols); 
+    Serial.print(F("Msg Type: "));
+    Serial.println(mtype);
 }
 
 
@@ -463,7 +488,7 @@ void doConfigMode() {
           // Type 2 message
           buildWSPRSymbols(2);
         }
-        
+
         sendWSPR();
         Tracker.readBatteryVoltage(true);  //read the battery voltage after the transmission
       }
