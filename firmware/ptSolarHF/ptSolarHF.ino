@@ -30,9 +30,6 @@ Before programming for the first time, the ATmega fuses must be set.
 #include <avr/pgmspace.h>
 #include <avr/wdt.h>
 
-#include "MemoryFree.h"
-
-
 #include <si5351.h>
 #include "wspr_enc.h"
 #include "nhash.h"
@@ -94,9 +91,6 @@ ptTracker Tracker(PIN_LED, PIN_AUDIO, PIN_ANALOG_BATTERY, Config.getAnnounceMode
 GPS GPSParser(PIN_GPS_RX, PIN_GPS_TX, PIN_GPS_EN);                                      //Object that parses the GPS strings
 
 
-bool bHasBurst;
-float fMaxAlt;
-
 enum XmitState{
     NO_XMIT,
     XMIT_TYPE1,
@@ -124,11 +118,6 @@ void setup() {
     wdt_reset();    //reset the watchdog timer (even if we're not using it)
     showVersion();    //show the version of the firmware that we're running
 
-
-    //Init some variables
-    fMaxAlt = 0;
-    bHasBurst = false;
-
     Tracker.annunciate('k');
 
     wdt_reset();
@@ -151,8 +140,6 @@ void setup() {
 void loop() {
 
     unsigned long battMillivolts;
-
-
     int iSeconds, iMinutes, iHours;
     byte byTemp;
 
@@ -240,9 +227,6 @@ void loop() {
     }
 
 
-    
-    
-
     if (xmitState != NO_XMIT)
     {
         //Check for reasons not to transmit
@@ -281,8 +265,6 @@ void loop() {
             buildWSPRSymbols(3);
             sendWSPR();
         }
-
-        
 
         xmitState = NO_XMIT;
     }
@@ -342,7 +324,7 @@ static void buildWSPRSymbols(uint8_t msgType) {
  */
 static void sendWSPR() {
     const uint64_t base_cHz = (uint64_t)Config.getFrequencyTx1() * 100ULL;
-
+    byte byTemp;
     Serial.println(F("Xmit WSPR"));
 
     si5351.output_enable(SI5351_CLK0, 1);
@@ -354,6 +336,21 @@ static void sendWSPR() {
         const uint8_t sym = wspr_symbols[i] & 0x03;
         const uint64_t f_cHz = base_cHz + (uint64_t)sym * (uint64_t)WSPR_TONE_SPACING_CENTI_HZ;
         si5351.set_freq(f_cHz, SI5351_CLK0);
+
+        //Check if we're trying to interrupt the transmission to enter config mode
+        if (Serial.available())
+        {
+            byTemp = Serial.read();
+            if (byTemp == '!') 
+            {
+                //Shut the transmitter down
+                si5351.output_enable(SI5351_CLK0, 0);
+                digitalWrite(PIN_PTT_OUT, LOW);
+
+                //Go into config mode
+                doConfigMode();
+            }
+        }
         delay(WSPR_TONE_MS);
     }
 

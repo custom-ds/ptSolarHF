@@ -102,7 +102,7 @@ class GPS
       else return 0;
     }
     inline uint8_t AltitudeWSPRCoarse() {
-      if (_fAltitude < 18000.0) return (int(_fAltitude / 18000.0 * 61 ));
+      if (_fAltitude < 18000.0) return (int(_fAltitude / 295.08)); // 18000m altitude, divided into 61 descrete buckets
       else return 60;
     }
 

@@ -1,0 +1,7 @@
+{
+    "band": "10",
+    "callsign": "MYCALL/16",
+    "aprs_callsign": "NOCALL",
+    "aprs_passcode": "12345",
+    "_aprs_passcode_comment": "Your APRS-IS passcode (generate at https://apps.magicbug.co.uk/passcode/)"
+}
