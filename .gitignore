@@ -63,5 +63,4 @@ eagle.epf
 *top-pos.csv
 
 *.FCBak
-wspr-to-aprs/converter.py
 wspr-to-aprs/config.json

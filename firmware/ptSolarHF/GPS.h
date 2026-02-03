@@ -102,8 +102,25 @@ class GPS
       else return 0;
     }
     inline uint8_t AltitudeWSPRCoarse() {
-      if (_fAltitude < 18000.0) return (int(_fAltitude / 295.08)); // 18000m altitude, divided into 61 descrete buckets
-      else return 60;
+      if (_fAltitude < 1000) return 0;
+      if (_fAltitude < 2000) return 3;
+      if (_fAltitude < 3000) return 7;
+      if (_fAltitude < 4000) return 10;
+      if (_fAltitude < 5000) return 13;
+      if (_fAltitude < 6000) return 17;
+      if (_fAltitude < 7000) return 20;
+      if (_fAltitude < 8000) return 23;
+      if (_fAltitude < 9000) return 27;
+      if (_fAltitude < 10000) return 30;
+      if (_fAltitude < 11000) return 33;
+      if (_fAltitude < 12000) return 37;
+      if (_fAltitude < 13000) return 40;
+      if (_fAltitude < 14000) return 43;
+      if (_fAltitude < 15000) return 47;
+      if (_fAltitude < 16000) return 50;
+      if (_fAltitude < 17000) return 53;
+      if (_fAltitude < 18000) return 57;
+      return 60;
     }
 
     inline float Knots() { 

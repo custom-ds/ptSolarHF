@@ -17,6 +17,10 @@ Before programming for the first time, the ATmega fuses must be set.
  High:     0xD6
  Extended: 0xFD
 
+
+This firmware requires the following libraries to be installed with the Library Manager inside of the Arduino IDE:
+  - Si5351 Library by Etherkit
+
 */
 
 
@@ -29,19 +33,16 @@ Before programming for the first time, the ATmega fuses must be set.
 #define __PROG_TYPES_COMPAT__
 #include <avr/pgmspace.h>
 #include <avr/wdt.h>
-
 #include <si5351.h>
+#include <string.h>
+#include <Wire.h>
+
 #include "wspr_enc.h"
 #include "nhash.h"
-
-#include <int.h>
-#include <string.h>
-
 #include "ptConfig.h"
 #include "GPS.h"
 #include "ptTracker.h"
 
-#include <Wire.h>
 
 //PD0 is Serial Port RX
 //PD1 is Serial Port TX
@@ -231,42 +232,42 @@ void loop() {
     {
         //Check for reasons not to transmit
         //GPS Lock
-        if (!GPSParser.FixQuality() || GPSParser.NumSats() < 4) {
-            // we are having GPS fix issues - do not transmit
-            xmitState = NO_XMIT;
-            nextXmitState = NO_XMIT;
-            Serial.println(F("No GPS Fix, no Xmit"));
+        if ((!GPSParser.FixQuality() || GPSParser.NumSats() < 4) || GPSParser.isRFBlackoutZone()) 
+        {
+          if (GPSParser.isRFBlackoutZone())  {
+            Serial.print(F("RF Blackout"));
+          } else {
+            Serial.print(F("No GPS Fix"));
+          }
+          Serial.println(F(" - no Xmit"));
+          wdt_reset();
+          
         } 
-        
-        //Forbidden Zones
-        if (GPSParser.isRFBlackoutZone()) {
-            xmitState = NO_XMIT;
-            nextXmitState = NO_XMIT;
-            Serial.println(F("Forbidden Zone, no Xmit"));
-        }
-
-
-        //If there's still a valid transmit state, go ahead and build and send the WSPR packet
-        if (xmitState == XMIT_TYPE1)
+        else 
         {
-            Serial.println(F("Xmit Type 1"));
-            buildWSPRSymbols(1);
-            sendWSPR();
-        }
-        else if (xmitState == XMIT_TYPE2)
-        {
-            Serial.println(F("Xmit Type 2"));
-            buildWSPRSymbols(2);
-            sendWSPR();
-        }
-        else if (xmitState == XMIT_TYPE3)
-        {
-            Serial.println(F("Xmit Type 3"));
-            buildWSPRSymbols(3);
-            sendWSPR();
-        }
 
-        xmitState = NO_XMIT;
+          //If there's still a valid transmit state, go ahead and build and send the WSPR packet
+          if (xmitState == XMIT_TYPE1)
+          {
+              Serial.println(F("Xmit Type 1"));
+              buildWSPRSymbols(1);
+              sendWSPR();
+          }
+          else if (xmitState == XMIT_TYPE2)
+          {
+              Serial.println(F("Xmit Type 2"));
+              buildWSPRSymbols(2);
+              sendWSPR();
+          }
+          else if (xmitState == XMIT_TYPE3)
+          {
+              Serial.println(F("Xmit Type 3"));
+              buildWSPRSymbols(3);
+              sendWSPR();
+          }
+
+          xmitState = NO_XMIT;
+        }
     }
 }
 
