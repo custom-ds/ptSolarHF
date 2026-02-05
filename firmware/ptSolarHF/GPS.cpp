@@ -380,11 +380,13 @@ void GPS::parseRMC() {
 	char* ptrTemp;
 
 	//Set the szTemp to a testing string
-	//strcpy(this->_szTemp, "$GNRMC,162315.00,A,4630.12340,N,10545.05519,W,0.022,137.11,120624,,,A*7C");
+	// strcpy(this->_szTemp, "$GNRMC,162315.00,A,4630.12340,N,10545.05519,W,0.022,137.11,120624,,,A*7C");
+	// strcpy(this->_szTemp, "$GNRMC,220501.00,A,5130.12345,N,00007.54321,W,000.4,090.2,020225,,,A*72");
+	// strcpy(this->_szTemp, "$GNRMC,153020.00,A,4045.12345,N,07359.54321,W,003.2,182.5,020225,,,A*7B");
+	// strcpy(this->_szTemp, "$GPRMC,123519.00,A,4807.038,N,01131.000,E,022.4,084.4,230394,,,A*6C");
 
 	ptrTemp = &this->_szTemp[7];			//set this pointer to the hours digit
 	
-
 
 	getString(ptrTemp, sz, 7);
 
@@ -492,6 +494,9 @@ void GPS::parseGGA() {
 
 	//Set the szTemp to a testing string
 	//strcpy(this->_szTemp, "$GNGGA,162315.00,4630.12340,N,10545.05519,W,1,03,1.86,15577.4,M,-26.1,M,,*76");
+	//strcpy(this->_szTemp, "$GNGGA,153025.00,4045.12360,N,07359.54300,W,5,14,0.8,13.00,M,-34.5,M,1.8,0000*43");
+	//strcpy(this->_szTemp, "$GPGGA,021430.50,3746.5123,N,12225.1678,W,1,10,0.7,15.2,M,-25.3,M,,*76");
+	//strcpy(this->_szTemp, "$GPGGA,184545.00,3345.8762,N,11751.3210,W,2,12,0.8,102.3,M,-33.0,M,0004,0007*6A");
 
 	ptrTemp = &this->_szTemp[7];			//set this pointer to the hours digit
 

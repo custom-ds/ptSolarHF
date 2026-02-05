@@ -91,6 +91,10 @@ ptConfig Config;                                                                
 ptTracker Tracker(PIN_LED, PIN_AUDIO, PIN_ANALOG_BATTERY, Config.getAnnounceMode());    //Object that manages the board-specific functions
 GPS GPSParser(PIN_GPS_RX, PIN_GPS_TX, PIN_GPS_EN);                                      //Object that parses the GPS strings
 
+//Keep track of the grid square and altitude between transmissions
+uint8_t coarseAlt;
+char szGrid4[5];
+char szGrid6[7];
 
 enum XmitState{
     NO_XMIT,
@@ -190,7 +194,7 @@ void loop() {
         delay(750); // wait for about the amount of time that we'd normally spend grabbing a GPS reading
     }
 
-    xmitState = NO_XMIT;
+    xmitState = NO_XMIT;    //Need to assume we're not transmitting even if it was skipped last time around. Otherwise it may transmit beyond top of the minute.
     GPSParser.getGPSTime(&iHours, &iMinutes, &iSeconds);
     if (iSeconds <= 2 && iMinutes % 2 == 0) 
     {
@@ -201,6 +205,7 @@ void loop() {
             // We have a pending transmit state from the last time we checked - use that instead
             xmitState = nextXmitState;
             nextXmitState = NO_XMIT;
+            //No need to get the Grid/altitude since it was already captures when sending the Type2.
             Serial.println(F("Xmit from next state"));
         }
         else
@@ -214,6 +219,11 @@ void loop() {
                     // Type 1 message
                     xmitState = XMIT_TYPE1;
                     nextXmitState = NO_XMIT;
+
+                    //preload the position and altitude so that we don't have to worry about the GPS loosing lock during transmissions
+                    coarseAlt = GPSParser.AltitudeWSPRCoarse();
+                    GPSParser.getGridSquare(szGrid4, 4);
+                    GPSParser.getGridSquare(szGrid6, 6);
                     Serial.println(F("Xmit 1"));
                 }
                 else if (Config.getWSPRMessageType() == 1 || Config.getWSPRMessageType() == 11)
@@ -221,6 +231,11 @@ void loop() {
                     // Type 2 message
                     xmitState = XMIT_TYPE2;
                     nextXmitState = XMIT_TYPE3;
+
+                    //preload the position and altitude so that we don't have to worry about the GPS loosing lock during transmissions
+                    coarseAlt = GPSParser.AltitudeWSPRCoarse();
+                    GPSParser.getGridSquare(szGrid4, 4);
+                    GPSParser.getGridSquare(szGrid6, 6);                    
                     Serial.println(F("Xmit 2 then 3"));
                 }
             }
@@ -266,7 +281,7 @@ void loop() {
               sendWSPR();
           }
 
-          xmitState = NO_XMIT;
+          xmitState = NO_XMIT;    //we're done transmitting - reset
         }
     }
 }
@@ -278,22 +293,16 @@ void loop() {
  */
 static void buildWSPRSymbols(uint8_t msgType) {
     char szAltitude[4];
-    char szGrid[7];
+    uint8_t xmitMessageType;
 
     wdt_reset();
 
     Serial.print(F("Build WSPR Type "));
     Serial.println(msgType);
     //Calculate the coarse altitude for WSPR encoding
-    itoa(GPSParser.AltitudeWSPRCoarse(), szAltitude, 10);
+    itoa(coarseAlt, szAltitude, 10);
 
-    if (msgType < 3) {
-        //Get the Maidenhead grid square
-        GPSParser.getGridSquare(szGrid, 4);
-    } else {
-        //Type 2/3 message - 6 character grid square
-        GPSParser.getGridSquare(szGrid, 6);
-    }
+
     //Message type gets infered from the following logic:
     // Type 1 - If a standard 4-character grid square is used and a "normal" callsign which is <= 6 characters and no slashes
     // Type 2 - If a standard 4-character grid square is used and a "special" callsign which is > 6 characters or has a slash
@@ -307,15 +316,23 @@ static void buildWSPRSymbols(uint8_t msgType) {
     Serial.print(F("Call: "));
     Serial.println(Config.getCallsign());
     Serial.print(F("Grid: "));
-    Serial.println(szGrid);
+    Serial.println(szGrid6);
     Serial.print(F("Alt: "));
     Serial.println(szAltitude);
 
 
     //Build the WSPR symbols
-    uint8_t mtype = wspr_enc(Config.getCallsign(), szGrid, szAltitude, wspr_symbols); 
+    if (msgType < 3)
+    {
+      xmitMessageType = wspr_enc(Config.getCallsign(), szGrid4, szAltitude, wspr_symbols); 
+    } 
+    else 
+    {
+      xmitMessageType = wspr_enc(Config.getCallsign(), szGrid6, szAltitude, wspr_symbols);
+    }
+
     Serial.print(F("Msg Type: "));
-    Serial.println(mtype);
+    Serial.println(xmitMessageType);
 }
 
 
