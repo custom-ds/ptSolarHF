@@ -12,74 +12,84 @@ import re
 
 def main():
 
-    lastPacketTime = None
-
-    #Load the APRS-IS credentials, band, and callsign from file config.json
-    
+    #Load the APRS-IS credentials and flights from file config.json
     # Get the directory where this script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config_path = os.path.join(script_dir, "config.json")
-    
-    with open(config_path, "r") as config_file:
-        config = json.load(config_file)
-        band = config.get("band", "10")
-        callsign = config.get("callsign", "N0CALL")
-        aprs_callsign = config.get("aprs_callsign", "N0CALL")
-        aprs_passcode = config.get("aprs_passcode", "12345")
+
+
+
 
 
     while True:
 
-        spot = getSpot(callsign, band, lastPacketTime)
+        #Read in the config file each time we cycle through the list
+        with open(config_path, "r") as config_file:
+            config = json.load(config_file)
+            aprsCallsign = config.get("aprsCallsign", "N0CALL")
+            aprsPasscode = config.get("aprsPasscode", "12345")
+            cycleDelay = config.get("cycleDelay", 120)
+            flights = config.get("Flights", [])
 
-        #Grab the most recent spot
-        if spot:
-            print("New spot found:")
+        #Search for each of the flights in the config file
+        for flight in flights:
 
-            
-            lastPacketTime = spot['Datetime']       #keep track of last spot time
-            aprsHHMMSS = spot['Datetime'].strftime("%H%M%S")
-            aprsCallsign = spot['Callsign'].replace("/", "-")
-            wsprAltitudeCoarse = calcCoarseAltitude(spot['dBm'])
+            #Extract the information about this flight from the config array
+            callsign = flight.get("callsign", "N0CALL")
+            band = flight.get("band", "10")
+            lastHeard = datetime.strptime(flight.get("lastHeard"), '%Y-%m-%d %H:%M:%S')
 
-            #convert meters to feet for APRS
-            wsprAltitudeCoarse = int(wsprAltitudeCoarse * 3.28084)
-            # Put leading zeros on altitude
-            aprsAltitudeCoarse = f"{wsprAltitudeCoarse:06d}"
+            #Go check to see if we have a new spot for this callsign, that's newer than the lastHeard
+            spot = getSpot(callsign, band, lastHeard)
 
-            (lat, lon) = convertGridToLatLon(spot['Gridsquare'])
-            latlon = f"{formatLat(lat)}/{formatLon(lon)}"
+            #See if there was a newer spot found
+            if spot:
+                print("New spot found:")
 
+                #Extract the components to rebuild an APRS packet
+                aprsHHMMSS = spot['Datetime'].strftime("%H%M%S")
+                aprsCallsign = spot['Callsign'].replace("/", "-")
+                wsprAltitudeCoarse = calcCoarseAltitude(spot['dBm'])
 
-            aprsSymbol = 'O' #APRS Symbol
-            aprsCourse = '000' #APRS Course
-            aprsSpeed = '000'  #APRS Speed
-            status = f"WSPR by {spot['ReportedBy']} on {spot['Frequency']}MHz SNR {spot['SNR']} at {spot['Datetime'].strftime("%H%M")}"
+                #convert meters to feet for APRS
+                wsprAltitudeCoarse = int(wsprAltitudeCoarse * 3.28084)
+                # Put leading zeros on altitude
+                aprsAltitudeCoarse = f"{wsprAltitudeCoarse:06d}"
 
-            messageaprs = (f"{aprsCallsign}>APRS,TCPIP*:@{aprsHHMMSS}h{latlon}{aprsSymbol}{aprsCourse}/{aprsSpeed}/A={aprsAltitudeCoarse} {status}\r\n").encode('utf8')
-            #Convert to bytes for APRS-IS
-            messageaprs = messageaprs.decode('utf8')
+                (lat, lon) = convertGridToLatLon(spot['Gridsquare'])
+                latlon = f"{formatLat(lat)}/{formatLon(lon)}"
 
-            print("Spot Details:")
-            print(aprsHHMMSS)
-            print(aprsCallsign)
-            print(wsprAltitudeCoarse)
-            print(f"Latitude: {lat}, Longitude: {lon}")
-            print(latlon)
-            print(status)
+                aprsSymbol = 'O' #APRS Balloon Symbol
+                aprsCourse = '000' #APRS Course
+                aprsSpeed = '000'  #APRS Speed
+                status = f"WSPR by {spot['ReportedBy']} on {spot['Frequency']}MHz SNR {spot['SNR']} at {spot['Datetime'].strftime('%H%M')}" 
 
+                messageaprs = (f"{aprsCallsign}>APRS,TCPIP*:@{aprsHHMMSS}h{latlon}{aprsSymbol}{aprsCourse}/{aprsSpeed}/A={aprsAltitudeCoarse} {status}\r\n").encode('utf8')
+                messageaprs = messageaprs.decode('utf8')        #Convert to bytes for APRS-IS
 
+                print("Spot Details:")
+                print(aprsHHMMSS)
+                print(aprsCallsign)
+                print(wsprAltitudeCoarse)
+                print(latlon)
+                print(status)
 
-            print("APRS Message:")
-            print(messageaprs)
-            
+                print("APRS Message:")
+                print(messageaprs)
 
+                print("Sending to APRS-IS!")
+                sendToAPRSIS(aprsCallsign, aprsPasscode, messageaprs)
+           
+                #Write the updated lastHeard time back out to the config file
+                with open(config_path, "w") as config_file:
+                    # Convert datetime objects back to strings for JSON serialization
+                    flight["lastHeard"] = spot['Datetime'].strftime("%Y-%m-%d %H:%M:%S")
+                    json.dump(config, config_file, indent=4)
 
-            sendToAPRSIS(aprs_callsign, aprs_passcode, messageaprs)
-
-        #Delay 2 minutes before checking again
-        print("Waiting 2 minutes before checking for new spots...")
-        time_module.sleep(120)        
+        #Delay x seconds before checking again
+        print()
+        print(f"Waiting {cycleDelay} seconds before checking for new spots...")
+        time_module.sleep(cycleDelay)        
 
 
 
@@ -91,6 +101,8 @@ def getSpot(callsign, band, lastSpotTime):
     :param lastSpotTime: The last time a spot was recorded
     :return: A list of spots as dictionaries
     """
+    print()
+    print(f"Searching for {callsign} on band {band}")
     try:
         url = urlopen("http://wsprnet.org/olddb?mode=html&band="+band+"&limit=3000&findcall="+callsign+"&findreporter=&sort=date", timeout = 60)
 
@@ -125,9 +137,9 @@ def getSpot(callsign, band, lastSpotTime):
                         spot_dict['Datetime'] = None
                 spots.append(spot_dict)
     
-    print(f"Found {len(spots)} spots")
-    for spot in spots[:3]:  # Print first 3 as example
-        print(spot)
+    print(f"  Found {len(spots)} spots")
+    # for spot in spots[:3]:  # Print first 3 as example
+    #     print(spot)
 
     #Loop through the spots in reverse order (oldest to newest) and find any spot newer than lastSpotTime
     new_spots = []
@@ -137,7 +149,7 @@ def getSpot(callsign, band, lastSpotTime):
             return spot
 
     #We didn't find any new spots
-    print("No new spots found.")
+    print("  No new spots found.")
     return None 
 
 

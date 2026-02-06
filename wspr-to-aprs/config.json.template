@@ -1,7 +1,17 @@
 {
-    "band": "10",
-    "callsign": "MYCALL/16",
-    "aprs_callsign": "NOCALL",
-    "aprs_passcode": "12345",
-    "_aprs_passcode_comment": "Your APRS-IS passcode (generate at https://apps.magicbug.co.uk/passcode/)"
+    "aprsCallsign": "N0CALL",
+    "aprsPasscode": "12345",
+    "cycleDelay": 120,
+    "Flights": [
+        {
+            "callsign": "W0ZC/16",
+            "band": "10",
+            "lastHeard": "2026-02-03 19:00:00"
+        },
+        {
+            "callsign": "W0ZC/17",
+            "band": "10",
+            "lastHeard": "2026-02-06 01:00:00"
+        }
+    ]
 }
