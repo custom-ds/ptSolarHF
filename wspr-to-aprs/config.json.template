@@ -10,7 +10,7 @@
         },
         {
             "callsign": "W0ZC/17",
-            "band": "10",
+            "band": "all",
             "lastHeard": "2026-02-06 01:00:00"
         }
     ]

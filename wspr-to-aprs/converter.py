@@ -104,11 +104,12 @@ def getSpot(callsign, band, lastSpotTime):
     print()
     print(f"Searching for {callsign} on band {band}")
     try:
-        url = urlopen("http://wsprnet.org/olddb?mode=html&band="+band+"&limit=3000&findcall="+callsign+"&findreporter=&sort=date", timeout = 60)
-
+        url = "http://wsprnet.org/olddb?mode=html&band="+band+"&limit=50&findcall="+callsign+"&findreporter=&sort=date"
+        page = urlopen(url)
+        print(url)
         #read the source from the URL
-        readHtml = url.read()
-        url.close()
+        readHtml = page.read()
+        page.close()
     except:
         print("--> Error reading WSPRnet database")
         pass
@@ -142,11 +143,12 @@ def getSpot(callsign, band, lastSpotTime):
     #     print(spot)
 
     #Loop through the spots in reverse order (oldest to newest) and find any spot newer than lastSpotTime
-    new_spots = []
     for spot in reversed(spots):
-        if lastSpotTime is None or spot['Datetime'] > lastSpotTime:
-            print("New spot found:")
-            return spot
+        #Check if lastSpotTime is not None and if the spot is newer than lastSpotTime
+        if (spot['Datetime'] is not None and lastSpotTime is not None):
+            if spot['Datetime'] > lastSpotTime:
+                print("New spot found:")
+                return spot
 
     #We didn't find any new spots
     print("  No new spots found.")
