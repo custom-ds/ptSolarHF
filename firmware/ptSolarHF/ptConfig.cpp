@@ -65,9 +65,10 @@ void ptConfig::setDefaultConfig() {
     strcpy(this->_config.Callsign, "N0CALL");
     this->_config.FrequencyTx1 = 28126100UL;   //Default to 10m, 28.1261MHz
     this->_config.FrequencyTx2 = 21093000UL;   //Default to 20m, 14.0970MHz
+    this->_config.ToneOffset = 1500;    //Default tone offset for WSPR audio generation
     this->_config.Correction = 0;    //No frequency correction by default
-    this->_config.WSPRMessageType = 0;    //Standard WSPR message
-    this->_config.TxMod = 4;    //Transmit every 4 minutes (minutes modulus 4)
+    this->_config.WSPRMessageType = 2;    //Type 2/3 messages
+    this->_config.TxMod = 6;    //Transmit every 6 minutes (minutes modulus 6)
     this->_config.TxModOffset = 0;    //No offset
 
     this->_config.CheckSum = 410;		//Checksum for N0CALL
@@ -170,6 +171,9 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
           this->readConfigParam(szParam, 9);    //Transmit Frequency for si5351 (secondary) //Up to 9 digits, which is well within the range of a unsigned 32-bit integer
           this->_config.FrequencyTx2 = this->atou32(szParam);
 
+          this->readConfigParam(szParam, 9);  //Tone Offset for si5351 //Up to 9 digits, which is well within the range of a signed 32-bit integer
+          this->_config.ToneOffset = atoi(szParam);   //Tone offset for generating the WSPR audio
+
           this->readConfigParam(szParam, 9);    //Up to 9 digits, which is well within the range of a signed 32-bit integer
           this->_config.Correction = this->atoi32(szParam);    //Frequency correction in parts per billion
 
@@ -186,7 +190,7 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
           this->_config.TxModOffset = atoi(szParam);    //Transmit Modulus Offset
 
           this->readConfigParam(szParam, sizeof(szParam));
-          this->_config.HourlyReboot = szParam[0] == '1';    //Reboot the system every hour
+          this->_config.HourlyReboot = (szParam[0] == '1');    //Reboot the system every hour
     
           unsigned int iCheckSum = 0;
           for (int i=0; i<7; i++) {
@@ -224,6 +228,8 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
     Serial.print(this->_config.FrequencyTx1, DEC);
     Serial.write(0x09);
     Serial.print(this->_config.FrequencyTx2, DEC);
+    Serial.write(0x09);
+    Serial.print(this->_config.ToneOffset, DEC);
     Serial.write(0x09);
     Serial.print(this->_config.Correction, DEC);    //Frequency Correction
     Serial.write(0x09);

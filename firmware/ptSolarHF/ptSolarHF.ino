@@ -24,6 +24,16 @@ This firmware requires the following libraries to be installed with the Library 
 */
 
 
+
+
+///TODO: Add option to tweak correction factor into the maintenance mode - DONE
+///TODO: Implement dual frequency - DONE
+///TODO: Update Configurator to utilize bitmasking for settings - DONE
+///TODO: Remove extra debugging output - DONE
+///TODO: Refactor getGrid so that it calculates each go around, and stores - ???
+///TODO: Reboot hourly is not working - ???
+
+
 #define FIRMWARE_VERSION "1.0.0"
 #define CONFIG_PROMPT "\n\n# "
 #include "BoardDef.h"   //defines if this is a ptFlex, ptSolar, or ptSolarHF PCB board
@@ -69,20 +79,13 @@ This firmware requires the following libraries to be installed with the Library 
 //PC5 is SCL
 //PC6 is reset and not available
 
-//How many MS to delay between subsequent packets (as in between GPGGA and GPRMC strings
-#define DELAY_MS_BETWEEN_XMITS 1250
-#define METERS_TO_FEET 3.2808399
 
 //Debugging options
-#define XMIT_MILLIS true
-#define WATCHDOG
+#define CONFIG_TIMEOUT 600000
 
-static const int32_t  SI5351_CORRECTION_PPB = 0;        // e.g. -1200 = -1.2 ppm
-static const si5351_drive SI5351_CLK0_DRIVE = SI5351_DRIVE_8MA;
-
-static const uint16_t WSPR_TONE_SPACING_CENTI_HZ = 146; // ≈1.46 Hz
-static const uint16_t WSPR_SYMBOL_COUNT = 162;
-static const uint16_t WSPR_TONE_MS = 683; // 8192/12000 s
+#define WSPR_TONE_SPACING_CENTI_HZ 146
+#define WSPR_SYMBOL_COUNT 162
+#define WSPR_TONE_MS 683
 
 
 Si5351 si5351;
@@ -93,8 +96,7 @@ GPS GPSParser(PIN_GPS_RX, PIN_GPS_TX, PIN_GPS_EN);                              
 
 //Keep track of the grid square and altitude between transmissions
 uint8_t coarseAlt;
-char szGrid4[5];
-char szGrid6[7];
+char szGrid[7];
 
 enum XmitState{
     NO_XMIT,
@@ -116,9 +118,7 @@ void setup() {
     digitalWrite(PIN_PTT_OUT, LOW);    //Set PTT to low (not transmitting)
 
     wdt_disable();    //disable the watchdog timer by default
-    #ifdef WATCHDOG
     wdt_enable(WDTO_8S);    //Enable the Watchdog if configured
-    #endif
 
     wdt_reset();    //reset the watchdog timer (even if we're not using it)
     showVersion();    //show the version of the firmware that we're running
@@ -130,7 +130,7 @@ void setup() {
     Serial.println(F("Init Si5351"));
     si5351.init(SI5351_CRYSTAL_LOAD_10PF, 27000000, 0);
     si5351.set_correction(Config.getCorrection(), SI5351_PLL_INPUT_XO);
-    si5351.drive_strength(SI5351_CLK0, SI5351_CLK0_DRIVE);
+    si5351.drive_strength(SI5351_CLK0, SI5351_DRIVE_8MA);
     si5351.output_enable(SI5351_CLK0, 0);       //Turn off any outputs for now
 
     GPSParser.setDebugNEMA(true);    ///TODO: Need to pull this from Configuration
@@ -142,150 +142,164 @@ void setup() {
  * @brief  Main loop for the program.  This is where the main logic of the program is executed.
  * @note   This function will run continuously until the board is powered off or reset.
  */
-void loop() {
+void loop()
+{
 
-    unsigned long battMillivolts;
-    int iSeconds, iMinutes, iHours;
-    byte byTemp;
+  static unsigned long battMillivolts;
+  static uint8_t iSeconds, iMinutes, iHours;
+  static byte byTemp;
+  static bool bUseFreq1 = true; // Used to alternate between the two frequencies if configured to do so
 
-    wdt_reset();
+  wdt_reset();
 
-    // Check to see if we have a command from the serial port to indicate that we need to enter config mode
-    if (Serial.available())
+  // Check to see if we have a command from the serial port to indicate that we need to enter config mode
+  if (Serial.available())
+  {
+    byTemp = Serial.read();
+    if (byTemp == '!')
     {
-        byTemp = Serial.read();
-        if (byTemp == '!') 
-        {
-            doConfigMode();
-        }
+      doConfigMode();
     }
+  }
 
-    // Reboot the system hourly if configured to do so
-    if (Config.getRebootHourly())
+  Serial.println("");
+  Serial.println("");
+  for (int i = 0; i < 40; i++)
+    Serial.print("=");
+  Serial.println("");
+
+  // Reboot the system hourly if configured to do so
+  if (Config.getRebootHourly())
+  {
+    // Reboot if we've been running for 60 minutes
+    if (millis() > 3600000)
     {
-        // Reboot if we've been running for 60 minutes
-        if (millis() > 3600000)
-        {
-            // we've been running for 60 minutes - reboot the system
-            Serial.println(F("60min Reboot"));
-            delay(1000);
-            Tracker.reboot();
-        }
+      // we've been running for 60 minutes - reboot the system
+      Serial.println(F("60min Reboot"));
+      delay(1000);
+      Tracker.reboot();
     }
+  }
 
-    battMillivolts = (unsigned long)(Tracker.readBatteryVoltage(true) * 1000); // read the battery voltage and spit it out to the serial port
+  battMillivolts = (unsigned long)(Tracker.readBatteryVoltage(true) * 1000); // read the battery voltage and spit it out to the serial port
 
-    // check to see if we have sufficient battery to run the GPS
-    if (battMillivolts >= Config.getVoltThreshGPS())
+  // check to see if we have sufficient battery to run the GPS
+  if (battMillivolts >= Config.getVoltThreshGPS())
+  {
+    GPSParser.enableGPS(true); // enable the GPS module if it's not already. If it wasn't enabled, this will also initialize it.
+    GPSParser.collectGPSStrings();
+  }
+  else
+  {
+    // See if the Battery has dropped 100mV below the threshold.  If so, disable the GPS until the battery comes back up
+    if (battMillivolts < (Config.getVoltThreshGPS() - 100))
     {
-        GPSParser.enableGPS(true); // enable the GPS module if it's not already. If it wasn't enabled, this will also initialize it.
-        GPSParser.collectGPSStrings();
+      // we don't have enough battery to run the GPS - disable it
+      Serial.println(F("Disable GPS"));
+      GPSParser.disableGPS();
+    }
+    Serial.println(F("Low Batt, no GPS"));
+    delay(750); // wait for about the amount of time that we'd normally spend grabbing a GPS reading
+  }
+
+  xmitState = NO_XMIT; // Need to assume we're not transmitting even if it was skipped last time around. Otherwise it may transmit beyond top of the minute.
+  GPSParser.getGPSTime(&iHours, &iMinutes, &iSeconds);
+  if (iSeconds <= 2 && iMinutes % 2 == 0)
+  {
+    Serial.println(F("TOM")); // Top of minute
+
+    if (nextXmitState != NO_XMIT)
+    {
+      // We have a pending transmit state from the last time we checked - use that instead
+      xmitState = nextXmitState;
+      nextXmitState = NO_XMIT;
+      // No need to get the Grid/altitude since it was already captures when sending the Type2.
+      Serial.println(F("Xmit next"));
     }
     else
     {
-        // See if the Battery has dropped 100mV below the threshold.  If so, disable the GPS until the battery comes back up
-        if (battMillivolts < (Config.getVoltThreshGPS() - 100))
-        {
-            // we don't have enough battery to run the GPS - disable it
-            Serial.println(F("Disabling GPS"));
-            GPSParser.disableGPS();
-        }
-        Serial.println(F("Low Batt, no GPS"));
-        delay(750); // wait for about the amount of time that we'd normally spend grabbing a GPS reading
-    }
 
-    xmitState = NO_XMIT;    //Need to assume we're not transmitting even if it was skipped last time around. Otherwise it may transmit beyond top of the minute.
-    GPSParser.getGPSTime(&iHours, &iMinutes, &iSeconds);
-    if (iSeconds <= 2 && iMinutes % 2 == 0) 
-    {
-        Serial.println(F("Top of minute"));
+      // preload the position and altitude so that we don't have to worry about the GPS loosing lock during transmissions
+      coarseAlt = GPSParser.AltitudeWSPRCoarse();
+      GPSParser.getGridSquare(szGrid, 6);
 
-        if (nextXmitState != NO_XMIT)
+      if ((!GPSParser.FixQuality() || GPSParser.NumSats() < 4) || GPSParser.isRFBlackoutZone())
+      {
+        if (GPSParser.isRFBlackoutZone())
         {
-            // We have a pending transmit state from the last time we checked - use that instead
-            xmitState = nextXmitState;
-            nextXmitState = NO_XMIT;
-            //No need to get the Grid/altitude since it was already captures when sending the Type2.
-            Serial.println(F("Xmit from next state"));
+          Serial.print(F("Blackout"));
         }
         else
         {
-            //Nothing has been pre-defined for xmitting - see if it's time to start a new cycle
-            if ((iMinutes + Config.getTxModOffset()) % Config.getTxMod() == 0)
-            {
-                // It's time to transmit on this cycle - see what we're configured to send
-                if (Config.getWSPRMessageType() == 0 || Config.getWSPRMessageType() == 10)
-                {
-                    // Type 1 message
-                    xmitState = XMIT_TYPE1;
-                    nextXmitState = NO_XMIT;
-
-                    //preload the position and altitude so that we don't have to worry about the GPS loosing lock during transmissions
-                    coarseAlt = GPSParser.AltitudeWSPRCoarse();
-                    GPSParser.getGridSquare(szGrid4, 4);
-                    GPSParser.getGridSquare(szGrid6, 6);
-                    Serial.println(F("Xmit 1"));
-                }
-                else if (Config.getWSPRMessageType() == 1 || Config.getWSPRMessageType() == 11)
-                {
-                    // Type 2 message
-                    xmitState = XMIT_TYPE2;
-                    nextXmitState = XMIT_TYPE3;
-
-                    //preload the position and altitude so that we don't have to worry about the GPS loosing lock during transmissions
-                    coarseAlt = GPSParser.AltitudeWSPRCoarse();
-                    GPSParser.getGridSquare(szGrid4, 4);
-                    GPSParser.getGridSquare(szGrid6, 6);                    
-                    Serial.println(F("Xmit 2 then 3"));
-                }
-            }
+          Serial.print(F("GPS"));
         }
+        Serial.println(F("-No Xmit"));
+        wdt_reset();
+      }
+      else
+      {
+        //We weren't set to transmit a Type 3 message, and we're not in a blackout zone, and we have a valid GPS lock - see if it's time to transmit
+        
+        if ((iMinutes + Config.getTxModOffset()) % Config.getTxMod() == 0)
+        {
+          Serial.print(F("Xmit "));
+          // It's time to transmit on this cycle - see what we're configured to send
+          if (Config.getWSPRMessageType() & 0x01)
+          {
+            // Type 1 message
+            xmitState = XMIT_TYPE1;
+            nextXmitState = NO_XMIT;
+
+            Serial.println(F("1"));
+          }
+          else if (Config.getWSPRMessageType() & 0x02)
+          {
+            // Type 2/3 message
+            xmitState = XMIT_TYPE2;
+            nextXmitState = XMIT_TYPE3;
+
+            Serial.println(F("2/3"));
+          }
+        }
+      }
     }
+  }
 
+  if (xmitState != NO_XMIT)
+  {
 
-    if (xmitState != NO_XMIT)
+    // If there's still a valid transmit state, go ahead and build and send the WSPR packet
+    if (xmitState == XMIT_TYPE1)
     {
-        //Check for reasons not to transmit
-        //GPS Lock
-        if ((!GPSParser.FixQuality() || GPSParser.NumSats() < 4) || GPSParser.isRFBlackoutZone()) 
-        {
-          if (GPSParser.isRFBlackoutZone())  {
-            Serial.print(F("RF Blackout"));
-          } else {
-            Serial.print(F("No GPS Fix"));
-          }
-          Serial.println(F(" - no Xmit"));
-          wdt_reset();
-          
-        } 
-        else 
-        {
+      buildWSPRSymbols(1);
+      sendWSPR(bUseFreq1);
 
-          //If there's still a valid transmit state, go ahead and build and send the WSPR packet
-          if (xmitState == XMIT_TYPE1)
-          {
-              Serial.println(F("Xmit Type 1"));
-              buildWSPRSymbols(1);
-              sendWSPR();
-          }
-          else if (xmitState == XMIT_TYPE2)
-          {
-              Serial.println(F("Xmit Type 2"));
-              buildWSPRSymbols(2);
-              sendWSPR();
-          }
-          else if (xmitState == XMIT_TYPE3)
-          {
-              Serial.println(F("Xmit Type 3"));
-              buildWSPRSymbols(3);
-              sendWSPR();
-          }
-
-          xmitState = NO_XMIT;    //we're done transmitting - reset
-        }
+      if (Config.getWSPRMessageType() & 0x80)
+        bUseFreq1 = !bUseFreq1; // Alternate frequencies between packets
+      else
+        bUseFreq1 = true; // Always use the primary frequency if we're not configured to alternate
     }
-}
+    else if (xmitState == XMIT_TYPE2)
+    {
+      buildWSPRSymbols(2);
+      sendWSPR(bUseFreq1);
 
+      // don't need to alternate after the type 2. Wait for the type 3
+    }
+    else if (xmitState == XMIT_TYPE3)
+    {
+      buildWSPRSymbols(3);
+      sendWSPR(bUseFreq1);
+
+      if (Config.getWSPRMessageType() & 0x80)
+        bUseFreq1 = !bUseFreq1; // Alternate frequencies between packets
+      else
+        bUseFreq1 = true; // Always use the primary frequency if we're not configured to alternate
+    }
+
+    xmitState = NO_XMIT; // we're done transmitting - reset
+  }
+}
 
 /**
  * @brief   Constructs the WSPR symbols (packet) to be transmitted based on the current GPS data and configuration.
@@ -293,46 +307,51 @@ void loop() {
  */
 static void buildWSPRSymbols(uint8_t msgType) {
     char szAltitude[4];
-    uint8_t xmitMessageType;
+    char szCallsign[11];      //WSPR supports 10 digit callsigns
+    char cGridFithDigit = '\0';
 
     wdt_reset();
 
-    Serial.print(F("Build WSPR Type "));
+    Serial.print(F("WSPR "));
     Serial.println(msgType);
     //Calculate the coarse altitude for WSPR encoding
     itoa(coarseAlt, szAltitude, 10);
 
+    Config.getCallsign(szCallsign, sizeof(szCallsign));
 
     //Message type gets infered from the following logic:
     // Type 1 - If a standard 4-character grid square is used and a "normal" callsign which is <= 6 characters and no slashes
     // Type 2 - If a standard 4-character grid square is used and a "special" callsign which is > 6 characters or has a slash
     // Type 3 - If a 6-character grid square is used
     //
-    // Convention states that a type 2 and type 3 message should be used together to convey more information.
+    // Convention states that a type 2 and type 3 message should be used together to convey more information. If both packets aren't sent
+    //  together WSPRNet.org won't display them correctly, and will use the prior six-digit grid square with a newer Type 2 location.
 
 
     
-    Serial.println(F("build"));
-    Serial.print(F("Call: "));
-    Serial.println(Config.getCallsign());
-    Serial.print(F("Grid: "));
-    Serial.println(szGrid6);
-    Serial.print(F("Alt: "));
+    Serial.print(F("Cal "));
+    Serial.println(szCallsign);
+    Serial.print(F("Grd "));
+    Serial.println(szGrid);
+    Serial.print(F("Alt "));
     Serial.println(szAltitude);
 
 
     //Build the WSPR symbols
     if (msgType < 3)
     {
-      xmitMessageType = wspr_enc(Config.getCallsign(), szGrid4, szAltitude, wspr_symbols); 
+      //Convert this into a 4 digit grid square
+      cGridFithDigit = szGrid[4];
+      szGrid[4] = '\0';
+      wspr_enc(szCallsign, szGrid, szAltitude, wspr_symbols); 
+
+      //replace the fifth digit
+      szGrid[4] = cGridFithDigit;
     } 
     else 
     {
-      xmitMessageType = wspr_enc(Config.getCallsign(), szGrid6, szAltitude, wspr_symbols);
+       wspr_enc(szCallsign, szGrid, szAltitude, wspr_symbols);
     }
-
-    Serial.print(F("Msg Type: "));
-    Serial.println(xmitMessageType);
 }
 
 
@@ -340,11 +359,16 @@ static void buildWSPRSymbols(uint8_t msgType) {
  * @brief   Transmits the WSPR symbols that were previously built using the Si5351 clock generator.
  * @note    This function will transmit the WSPR symbols stored in the global wspr_symbols array. It takes about 111 seconds to transmit the entire packet.
  */
-static void sendWSPR() {
-    const uint64_t base_cHz = (uint64_t)Config.getFrequencyTx1() * 100ULL;
+static void sendWSPR(bool useFreq1) {
+    const uint64_t base_cHz = (uint64_t)((useFreq1 ? Config.getFrequencyTx1() : Config.getFrequencyTx2())  + Config.getToneOffset()) * 100ULL;
     byte byTemp;
-    Serial.println(F("Xmit WSPR"));
+    Serial.print(F("Xmit "));
+    Serial.println((useFreq1 ? "freq 1" : "freq 2"));
 
+    GPSParser.disableGPS(); // turn off the GPS while we're transmitting.
+
+    //make sure the correction has been set before we transmit
+    si5351.set_correction(Config.getCorrection(), SI5351_PLL_INPUT_XO);
     si5351.output_enable(SI5351_CLK0, 1);
     digitalWrite(PIN_PTT_OUT, HIGH);
 
@@ -374,6 +398,9 @@ static void sendWSPR() {
 
     si5351.output_enable(SI5351_CLK0, 0);
     digitalWrite(PIN_PTT_OUT, LOW);
+    
+    //The GPS will turn back on at the top of the loop(), assuming the battery voltage is sufficient, so we don't need to turn it back on here.
+
     Serial.println(F("Done"));
 }
 
@@ -400,13 +427,15 @@ void doConfigMode() {
   byte byTemp;
 
   showVersion();
+  Serial.print(F(("Corr: ")));
+  Serial.println(Config.getCorrection());
   Serial.print(CONFIG_PROMPT);
 
   delay(750);
   Tracker.annunciate('c');
 
   //keep track of how long we can listen to the GPS
-  unsigned long ulUntil = millis() + 600000;
+  unsigned long ulUntil = millis() + CONFIG_TIMEOUT;
   
   while (millis() < ulUntil ) {
     //Endless loop. Only exit is to reboot with the 'Q', or after 10 minutes of inactivity
@@ -419,10 +448,9 @@ void doConfigMode() {
         showVersion();
       }
 
-      
-      if (byTemp == 'D' || byTemp == 'd') {
+      if (byTemp == '0') {
         //used to reset the tracker back to N0CALL defaults
-        Serial.println(F("Clear config"));
+        Serial.println(F("Defaults"));
         Config.setDefaultConfig();        
         Tracker.annunciate('w');
       }
@@ -439,81 +467,12 @@ void doConfigMode() {
         
         Serial.println(Tracker.readBatteryVoltage(true));
         GPSParser.collectGPSStrings();   //check the GPS  
-  
-
-        char status;
       }
-
-
-      if (byTemp == 'l' || byTemp == 'L') {
-        //Do a long test of the transmitter (useful for spectrum analysis or burn-in testing)
-        Serial.println(F("Test Xmit"));
-        Serial.println(F("\n1. - 1.5s"));
-        Serial.println(F("2. - 10s"));
-        Serial.println(F("3. - 30s"));
-        Serial.println(F("4. - 60s"));
-
-        while (!Serial.available()) {
-          //Wait for an input
-          wdt_reset();
-        }
-        byTemp = Serial.read();
-
-        if (byTemp >= '1' && byTemp <= '5') {
-        //   Aprs.setTxFrequency(Config.getRadioFreqTx());    //set the frequency to transmit on
-        //   Aprs.setRxFrequency(Config.getRadioFreqRx());    //set the frequency to receive on
-        //   Aprs.setTxDelay(Config.getRadioTxDelay());
-
-          Tracker.annunciate('t');
-          
-        //   Aprs.PTT(true);   //configures the SA818 as part of the transmit process.
-          switch (byTemp) {
-          case '1':
-            Serial.println(F("1.5s"));
-            delay(1500);
-            break;
-          case '2':
-            Serial.println(F("10s"));
-            delay(10000);
-            break;
-          case '3':
-            Serial.println(F("30s"));
-            delay(30000);
-            break;
-          case '4':
-            Serial.println(F("60s"));
-            delay(60000);
-            break;
-          default:
-            Serial.println(F("Unk"));
-          }
-
-        //   Aprs.PTT(false);
-        }
-      }
-
-      if (byTemp == 'P' || byTemp == 'p') {
-        //Send a test packet
-        Serial.println(F("Test Packet"));
-        if (Config.getWSPRMessageType() == 0 || Config.getWSPRMessageType() == 10) {
-          // Type 1 message
-          buildWSPRSymbols(1);
-        }
-        else if (Config.getWSPRMessageType() == 1 || Config.getWSPRMessageType() == 11) {
-          // Type 2 message
-          buildWSPRSymbols(2);
-        }
-
-        sendWSPR();
-        Tracker.readBatteryVoltage(true);  //read the battery voltage after the transmission
-      }
-
 
       if (byTemp == 'Q' || byTemp == 'q') {
         //Quit the config mode
         reboot();
       }
-
 
       if (byTemp == 'R' || byTemp == 'r') {
         Config.readEEPROM();    //pull the configs from eeprom
@@ -522,31 +481,68 @@ void doConfigMode() {
         reboot();    //reboot the system while we're waiting for a new config to be loaded
       }
 
+      //Adjust the Correction factor
+      if (byTemp == 'd') {
+        //down by 100
+        Config.setCorrection(Config.getCorrection() - 100);
+        Config.writeEEPROM();   //store the change
+      }
+      if (byTemp == 'D') {
+        //down by 1000
+        Config.setCorrection(Config.getCorrection() - 1000);
+        Config.writeEEPROM();   //store the change
+      }
+      if (byTemp == 'u') {
+        //up by 100
+        Config.setCorrection(Config.getCorrection() + 100);
+        Config.writeEEPROM();   //store the change
+      }
+      if (byTemp == 'U') {
+        //up by 1000
+        Config.setCorrection(Config.getCorrection() + 1000);
+        Config.writeEEPROM();   //store the change
+      }
 
-      if (byTemp == 'T' || byTemp == 't') {
-        //exercise the transmitter
-        wdt_reset();
-        //Configure the Si5351 to transmit a test tone on 10.000Mhz
-        Serial.println(F("10.00MHz Test"));
-        Serial.print(F(("Corr: ")));
-        Serial.println(Config.getCorrection());
-
+      //Test the transmitter for frequency accuracy. Lower case 't' gives 5 seconds, upper case 'T' gives 30 seconds
+      if (byTemp == 't' || byTemp == 'T') {
         si5351.set_correction(Config.getCorrection(), SI5351_PLL_INPUT_XO);
         si5351.set_freq(1000000000ULL, SI5351_CLK0);
         si5351.output_enable(SI5351_CLK0, 1);
         digitalWrite(PIN_PTT_OUT, HIGH);
 
+        uint8_t seconds = 5;
+        if (byTemp == 'T') seconds = 30;    //long test
         //Set to plenty of time so that the analyzer can get a fine reading on it
-        for (int i=0; i<30; i++) {
+        for (uint8_t i=0; i<seconds; i++) {
           Serial.print(F("."));
           delay(1000);
           wdt_reset();
         }
-
+        
         si5351.output_enable(SI5351_CLK0, 0);
         digitalWrite(PIN_PTT_OUT, LOW);
-      }      
+      }
 
+      //Send a WSPR packet. Lower case 'p' send either a type 1 or type 2 on the primary frequency, upper case 'P' transmits on the secondary frequency
+      if (byTemp == 'p' || byTemp == 'P') {
+        //Send a test packet
+        Serial.println(F("Test Packet"));
+        if (Config.getWSPRMessageType() & 0x01) {
+          // Type 1 message
+          buildWSPRSymbols(1);
+        }
+        else if (Config.getWSPRMessageType() & 0x02) {
+          // Type 2 message
+          buildWSPRSymbols(2);
+        }
+        sendWSPR((byTemp == 'p'));    //Use the primary frequency for 'p' and the secondary frequency for 'P'
+      }
+
+      //Quit out of configuration mode and reboot the system
+      if (byTemp == 'q') {
+        //Quit
+        reboot();    //reboot the system  
+      }
 
       if (byTemp == 'W' || byTemp == 'w') {
         //take the incoming configs and load them into the Config UDT
@@ -569,7 +565,9 @@ void doConfigMode() {
       }
 
       Serial.print(CONFIG_PROMPT);
-      ulUntil = millis() + 600000;    //reset the timer for the config mode
+      Serial.print(F(("Corr: ")));
+      Serial.println(Config.getCorrection());
+      ulUntil = millis() + CONFIG_TIMEOUT;    //reset the timer for the config mode
     }
   }
   

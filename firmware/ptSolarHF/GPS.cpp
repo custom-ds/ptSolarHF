@@ -291,7 +291,8 @@ void GPS::clearInputBuffer() {
  * @note   This function will add a character to the GPS string buffer and parse it for valid sentences.
  */
 void GPS::addChar(char c) {
-	//first make sure we still have room in the _szTemp for another char (and null termiation)
+
+char szGrid6[7];                    
 	if (_iTempPtr >= (_MAX_SENTENCE_LEN - 2)) {
 		//we're full and we apparently didn't find an end of string - throw the szTemp away and lets start over
 		this->_szTemp[0] = 0;
@@ -331,6 +332,7 @@ void GPS::addChar(char c) {
 				//Serial.println(F("Validating RMC"));
 				//this->validateGPSSentence(this->_szTemp, 13, 23);	//validate the GGA sentence to make sure it has the right number of commas and is long enough
 				this->parseRMC();
+this->getGridSquare(szGrid6, 6);	//first make sure we still have room in the _szTemp for another char (and null termiation)
 
 				this->_bGotNewRMC = true;      //set a temporary flag indicating that we got a new RMC sentence
 				this->_lastDecodedMillis = millis();    //keep track of the time when we last received a sentence
@@ -345,6 +347,7 @@ void GPS::addChar(char c) {
 				//Serial.println(F("Validating GGA"));
 				//this->validateGPSSentence(this->_szTemp, 14, 30);	//validate the GGA sentence to make sure it has the right number of commas and is long enough
 				this->parseGGA();
+this->getGridSquare(szGrid6, 6);	//first make sure we still have room in the _szTemp for another char (and null termiation)
 
 				this->_bGotNewGGA = true;      //set a temporary flag indicating that we got a new RMC sentence
 				this->_lastDecodedMillis = millis();    //keep track of the time when we last received a sentence
@@ -473,6 +476,7 @@ void GPS::parseRMC() {
 	this->getString(ptrTemp, this->_szGPSDate, 7);
 
 	this->convertLatLon();		//convert the lat/lon strings to decimal format
+
 
 }
 
@@ -821,7 +825,6 @@ bool GPS::getAPRSFrequency(char *sz) {
 	}
 	
 	return true;		//we can transmit
-
 }
 
 /**
@@ -830,6 +833,9 @@ bool GPS::getAPRSFrequency(char *sz) {
  * @note: Returns a 6-character Maidenhead grid square.
  */
 void GPS::getGridSquare(char *sz, uint8_t precision) {
+	Serial.println("");
+	Serial.print(F("GridSq -"));
+	Serial.println(precision);
 
 	if (precision != 6) precision = 4;
 
@@ -863,9 +869,10 @@ void GPS::getGridSquare(char *sz, uint8_t precision) {
   sz[2] = '0' + squareLon;
   sz[3] = '0' + squareLat;
 
-  if (precision <= 4) {
+  if (precision == 4) {
     sz[4] = '\0';
-    return;
+	Serial.println(sz);
+	return;
   }
 
   // ----- Subsquare (a-x) -----
@@ -884,6 +891,9 @@ void GPS::getGridSquare(char *sz, uint8_t precision) {
   sz[4] = 'a' + subLon;
   sz[5] = 'a' + subLat;
   sz[6] = '\0';
+
+  Serial.println(sz);
+
 }
 
 
@@ -901,17 +911,18 @@ void GPS::convertLatLon() {
 	uint32_t min_x10000;
 	uint32_t add_uDeg;
 	uint8_t i;
-	
-// Serial.print(F("Lat/Lon "));
-// Serial.print(this->_szLatitude);
-// Serial.print(F(", "));
-// Serial.println(this->_szLongitude);	
+Serial.println("");
+Serial.print(F("Lat/Lon "));
+Serial.print(this->_szLatitude);
+Serial.print(F(", "));
+Serial.println(this->_szLongitude);	
 
 
 	if (this->_szLatitude[0] == '\0' || this->_szLongitude[0] == '\0') {
 		//we don't have valid lat/lon strings - just return
 		this->_iLatitude = 0;
 		this->_iLongitude = 0;
+Serial.println(F("!!! INVALID !!!"));
 		return;
 	}
 
@@ -981,7 +992,7 @@ void GPS::convertLatLon() {
   if (this->_cLongitudeHemi == 'W') 
   	this->_iLongitude = -this->_iLongitude;
 
-// Serial.print(this->_iLatitude);
-// Serial.print(F(", "));
-// Serial.println(this->_iLongitude);
+Serial.print(this->_iLatitude);
+Serial.print(F(", "));
+Serial.println(this->_iLongitude);
 }

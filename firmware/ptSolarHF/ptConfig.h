@@ -35,13 +35,20 @@ class ptConfig {
       void setDefaultConfig();
       void writeEEPROM();
   
-      void ptConfig::readConfigParam(char *szParam, int iMaxLen);
-      bool ptConfig::getConfigFromPC();
-      void ptConfig::sendConfigToPC();
+      void readConfigParam(char *szParam, int iMaxLen);
+      bool getConfigFromPC();
+      void sendConfigToPC();
 
   
       //Getters and Setters
-      char* getCallsign() { return _config.Callsign; }
+      const char* getCallsign() const { return _config.Callsign; }
+      //Overload that allows copying the callsign into a provided buffer, with specified length
+      void getCallsign(char* out, size_t outLen) const {
+        if (out && outLen > 0) {
+          strncpy(out, _config.Callsign, outLen);
+          out[outLen - 1] = '\0';
+        }
+      }
       void setCallsign(char* callsign) { strcpy(_config.Callsign, callsign); }
     
       unsigned int getVoltThreshGPS() { return _config.VoltThreshGPS; }
@@ -55,6 +62,9 @@ class ptConfig {
 
       uint32_t getFrequencyTx2() { return _config.FrequencyTx2; }
       void setFrequencyTx2(uint32_t freq) { _config.FrequencyTx2 = freq; }
+
+      int32_t getToneOffset() { return _config.ToneOffset; }
+      void setToneOffset(int32_t offset) { _config.ToneOffset = offset; }
 
       int32_t getCorrection() { return _config.Correction; }
       void setCorrection(int32_t corr) { _config.Correction = corr; }
@@ -88,6 +98,7 @@ class ptConfig {
         unsigned int VoltThreshXmit;    //The voltage threshold to transmit a packet (in millivolts)
         uint32_t FrequencyTx1;    //The transmit frequency in Hz
         uint32_t FrequencyTx2;    //The transmit frequency in Hz (secondary, for dual frequency operation)
+        int32_t ToneOffset;    //Offset to apply to the FrequencyTx1/2 to generate the audio tones. Normally around 1600, but can be tweaked for spacing.
         int32_t Correction;    //Frequency correction in parts per billion
         uint8_t AnnounceMode;    //0=No annunciator, 1=LED only
         uint8_t WSPRMessageType;    //Type of WSPR message to send - 

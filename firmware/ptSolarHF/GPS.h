@@ -56,7 +56,7 @@ class GPS
     void getLongitude(char *sz);
 
    
-    inline void getGPSTime(int *Hour, int *Minute, int *Second)
+    inline void getGPSTime(uint8_t *Hour, uint8_t *Minute, uint8_t *Second)
     {
     	if (_bGGAComplete || _bRMCComplete) {
     		*Hour = _currTime.hh;
@@ -69,7 +69,7 @@ class GPS
     	}
     }	
     
-    inline int getGPSSeconds() {
+    inline uint8_t getGPSSeconds() {
       if (_bGGAComplete || _bRMCComplete) {
         return _currTime.ss;
       } else {
