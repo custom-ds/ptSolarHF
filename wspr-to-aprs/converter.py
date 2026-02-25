@@ -36,8 +36,10 @@ def main():
 
             #Extract the information about this flight from the config array
             callsign = flight.get("callsign", "N0CALL")
+            callsignGated = flight.get("callsignGated", "N0CALL")
             band = flight.get("band", "10")
             lastHeard = datetime.strptime(flight.get("lastHeard"), '%Y-%m-%d %H:%M:%S')
+            telemetry = flight.get("telemetry", "traveler")
 
             #Go check to see if we have a new spot for this callsign, that's newer than the lastHeard
             spot = getSpot(callsign, band, lastHeard)
@@ -48,8 +50,9 @@ def main():
 
                 #Extract the components to rebuild an APRS packet
                 aprsHHMMSS = spot['Datetime'].strftime("%H%M%S")
-                aprsCallsign = spot['Callsign'].replace("/", "-")
-                wsprAltitudeCoarse = calcCoarseAltitude(spot['dBm'])
+                #aprsCallsign = spot['Callsign'].replace("/", "-")
+
+                wsprAltitudeCoarse = calcCoarseAltitude(spot['dBm'], telemetry)
 
                 #convert meters to feet for APRS
                 wsprAltitudeCoarse = int(wsprAltitudeCoarse * 3.28084)
@@ -64,12 +67,12 @@ def main():
                 aprsSpeed = '000'  #APRS Speed
                 status = f"WSPR by {spot['ReportedBy']} on {spot['Frequency']}MHz SNR {spot['SNR']} at {spot['Datetime'].strftime('%H%M')}" 
 
-                messageaprs = (f"{aprsCallsign}>APRS,TCPIP*:@{aprsHHMMSS}h{latlon}{aprsSymbol}{aprsCourse}/{aprsSpeed}/A={aprsAltitudeCoarse} {status}\r\n").encode('utf8')
+                messageaprs = (f"{callsignGated}>APRS,TCPIP*:@{aprsHHMMSS}h{latlon}{aprsSymbol}{aprsCourse}/{aprsSpeed}/A={aprsAltitudeCoarse} {status}\r\n").encode('utf8')
                 messageaprs = messageaprs.decode('utf8')        #Convert to bytes for APRS-IS
 
                 print("Spot Details:")
                 print(aprsHHMMSS)
-                print(aprsCallsign)
+                print(callsignGated)
                 print(wsprAltitudeCoarse)
                 print(latlon)
                 print(status)
@@ -114,42 +117,53 @@ def getSpot(callsign, band, lastSpotTime):
         print("--> Error reading WSPRnet database")
         pass
     
-    #passing HTML to scrape it
-    soup = bs4.BeautifulSoup(readHtml, 'html.parser')
+    try:
+        #passing HTML to scrape it
+        soup = bs4.BeautifulSoup(readHtml, 'html.parser')
+    except:
+        print("--> Error parsing HTML from WSPRnet")
+        return None
     
-    # Convert HTML table to array (3rd table on the page)
-    spots = []
-    headers = ['Datetime', 'Callsign', 'Frequency', 'SNR', 'Drift', 'Gridsquare', 
-               'dBm', 'Watts', 'ReportedBy', 'ReportedByGridsquare', 'DistanceKM', 
-               'DistanceMiles', 'Version']
-    
-    tables = soup.find_all('table')
-    if len(tables) >= 3:
-        table = tables[2]  # Get the 3rd table (index 2)
-        for row in table.find_all('tr')[1:]:  # Skip header row
-            cols = [td.get_text(strip=True) for td in row.find_all('td')]
-            if cols:  # Only add rows with data
-                spot_dict = dict(zip(headers, cols))
-                # Convert Datetime string to datetime object
-                if 'Datetime' in spot_dict and spot_dict['Datetime']:
-                    try:
-                        spot_dict['Datetime'] = datetime.strptime(spot_dict['Datetime'], '%Y-%m-%d %H:%M')
-                    except ValueError:
-                        spot_dict['Datetime'] = None
-                spots.append(spot_dict)
-    
-    print(f"  Found {len(spots)} spots")
-    # for spot in spots[:3]:  # Print first 3 as example
-    #     print(spot)
 
-    #Loop through the spots in reverse order (oldest to newest) and find any spot newer than lastSpotTime
-    for spot in reversed(spots):
-        #Check if lastSpotTime is not None and if the spot is newer than lastSpotTime
-        if (spot['Datetime'] is not None and lastSpotTime is not None):
-            if spot['Datetime'] > lastSpotTime:
-                print("New spot found:")
-                return spot
+    try:
+        # Convert HTML table to array (3rd table on the page)
+        spots = []
+        headers = ['Datetime', 'Callsign', 'Frequency', 'SNR', 'Drift', 'Gridsquare', 
+                'dBm', 'Watts', 'ReportedBy', 'ReportedByGridsquare', 'DistanceKM', 
+                'DistanceMiles', 'Version']
+        
+        tables = soup.find_all('table')
+        if len(tables) >= 3:
+            table = tables[2]  # Get the 3rd table (index 2)
+            for row in table.find_all('tr')[1:]:  # Skip header row
+                cols = [td.get_text(strip=True) for td in row.find_all('td')]
+                if cols:  # Only add rows with data
+                    spot_dict = dict(zip(headers, cols))
+                    # Convert Datetime string to datetime object
+                    if 'Datetime' in spot_dict and spot_dict['Datetime']:
+                        try:
+                            spot_dict['Datetime'] = datetime.strptime(spot_dict['Datetime'], '%Y-%m-%d %H:%M')
+                        except ValueError:
+                            spot_dict['Datetime'] = None
+                    spots.append(spot_dict)
+        
+        print(f"  Found {len(spots)} spots")
+    except:
+        print("--> Error extracting spots from HTML")
+        return None
 
+    try:
+        #Loop through the spots in reverse order (oldest to newest) and find any spot newer than lastSpotTime
+        for spot in reversed(spots):
+            #Check if lastSpotTime is not None and if the spot is newer than lastSpotTime
+            if (spot['Datetime'] is not None and lastSpotTime is not None):
+                if spot['Datetime'] > lastSpotTime:
+                    print("New spot found:")
+                    return spot
+    except:
+        print("--> Error processing spots")
+        return None
+    
     #We didn't find any new spots
     print("  No new spots found.")
     return None 
@@ -371,56 +385,99 @@ def formatLon(lon):
     return f"{lon_deg:03d}{lon_min:05.2f}{lon_hemisphere}"
 
 # Calculate Coarse Altitude
-def calcCoarseAltitude(power):
+def calcCoarseAltitude(power, telemetry):
     """
     Convert the power in dBm to a coarse altitude in meters.
 
     :param power: Power in dBm
+    :param telemetry: The telemetry type, which can affect the altitude calculation
     """
 
 
     print("Calculating Coarse Altitude from power: "+str(power))
     power = int(power)  # in dBm
 
-    match power:
-        case 0: 
-            return 500
-        case 3:
-            return 1500
-        case 7:
-            return 2500
-        case 10:
-            return 3500
-        case 13:
-            return 4500
-        case 17:
-            return 5500
-        case 20:
-            return 6500
-        case 23:
-            return 7500
-        case 27:
-            return 8500
-        case 30:
-            return 9500
-        case 33:
-            return 10500
-        case 37:
-            return 11500
-        case 40:
-            return 12500
-        case 43:
-            return 13500
-        case 47:
-            return 14500
-        case 50:
-            return 15500
-        case 53:
-            return 16500
-        case 57:
-            return 17500
-        case 60:
-            return 18500
+    match telemetry:
+        case "traveler":
+            match power:
+                case 0: 
+                    return 500
+                case 3:
+                    return 1500
+                case 7:
+                    return 2500
+                case 10:
+                    return 3500
+                case 13:
+                    return 4500
+                case 17:
+                    return 5500
+                case 20:
+                    return 6500
+                case 23:
+                    return 7500
+                case 27:
+                    return 8500
+                case 30:
+                    return 9500
+                case 33:
+                    return 10500
+                case 37:
+                    return 11500
+                case 40:
+                    return 12500
+                case 43:
+                    return 13500
+                case 47:
+                    return 14500
+                case 50:
+                    return 15500
+                case 53:
+                    return 16500
+                case 57:
+                    return 17500
+                case 60:
+                    return 18500
+        case "zachtek":
+            match power:
+                case 0: 
+                    return 450
+                case 3:
+                    return 1500
+                case 7:
+                    return 2550
+                case 10:
+                    return 3450
+                case 13:
+                    return 4500
+                case 17:
+                    return 5500
+                case 20:
+                    return 6450
+                case 23:
+                    return 7500
+                case 27:
+                    return 8550
+                case 30:
+                    return 9450
+                case 33:
+                    return 10500
+                case 37:
+                    return 11550
+                case 40:
+                    return 12450
+                case 43:
+                    return 13500
+                case 47:
+                    return 14550
+                case 50:
+                    return 15450
+                case 53:
+                    return 16500
+                case 57:
+                    return 17550
+                case 60:
+                    return 18450
     return 0
 
 

@@ -696,6 +696,46 @@ void GPS::getLongitude(char *sz) {
   }
 }
 
+/**
+ * @brief   Returns the current altitude in the form of two bytes, with the coarse altitude in the first byte that will be transmitted as "power" and the fine as a signed 8 bit integer.
+ * @param   CoarseAltitude: A reference to a byte to store the coarse altitude in.
+ * @param   FineAltitude: A reference to a byte to store the fine altitude in. This will be in the value of 0-200, which is then offsets the transmit frequency.
+ * @return: None.
+ * @note    The coarse altitude is the integer part of the altitude in meters, and the
+ */
+void GPS::getWSPRAltitude(uint8_t &CoarseAlt, uint8_t &FineAlt) {
+	//WSPR altitude is encoded in 2 bytes, with the coarse altitude in the first byte and the fine altitude in the second byte.  The coarse altitude is the integer part of the altitude in meters, and the fine altitude is the fractional part of the altitude in meters multiplied by 100 (to get two decimal places).
+
+	const uint8_t AltLUT[19] = {0, 3, 7, 10, 13, 17, 20, 23, 27, 30, 33, 37, 40, 43, 47, 50, 53, 57, 60};	//Look Up Table for the Coarse altitude, based on the WSPR encoding of 0-60 in the fine altitude byte.
+	int iAltitude = (int)this->_fAltitude;    //get the altitude in meters as an integer
+	if (_bGGAComplete == false) iAltitude = 0;		//if we don't have a valid GGA sentence, just return 0 for the altitude
+	// Clamp to allowed range
+	if (iAltitude < 0) iAltitude = 0;
+	if (iAltitude > 19000) iAltitude = 19000;
+
+	
+	uint8_t tempAlt = iAltitude / 1000;                 // truncates toward 0 in Arduino C++
+	if (tempAlt > 18) tempAlt = 18;                   // clamp to max index of LUT
+	CoarseAlt = AltLUT[tempAlt];     // get the coarse altitude from the LUT
+	FineAlt = (iAltitude % 1000) / 5;            //Least significant byte is encoded as 0-200
+}
+
+void GPS::testWSPRAltitude() {
+	float Alt;
+	uint8_t Coarse, Fine;
+	for (Alt = -2000; Alt <= 21000; Alt += 250) {
+		this->_fAltitude = Alt;
+		this->_bGGAComplete = true;	//set this to true so that the getWSPRAltitude function doesn't just return 0 for the altitude
+
+		this->getWSPRAltitude(Coarse, Fine);
+		Serial.print("Alt: ");
+		Serial.print(Alt);
+		Serial.print(" Coarse: ");
+		Serial.print(Coarse);
+		Serial.print(" Fine: ");
+		Serial.println(Fine);
+	}
+}
 
 
 /**

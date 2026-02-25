@@ -66,6 +66,9 @@ class ptConfig {
       int32_t getToneOffset() { return _config.ToneOffset; }
       void setToneOffset(int32_t offset) { _config.ToneOffset = offset; }
 
+      bool getFineAltitudeModulation() { return _config.FineAltitudeModulation; }
+      void setFineAltitudeModulation(bool fineAlt) { _config.FineAltitudeModulation = fineAlt; }
+
       int32_t getCorrection() { return _config.Correction; }
       void setCorrection(int32_t corr) { _config.Correction = corr; }
 
@@ -99,6 +102,7 @@ class ptConfig {
         uint32_t FrequencyTx1;    //The transmit frequency in Hz
         uint32_t FrequencyTx2;    //The transmit frequency in Hz (secondary, for dual frequency operation)
         int32_t ToneOffset;    //Offset to apply to the FrequencyTx1/2 to generate the audio tones. Normally around 1600, but can be tweaked for spacing.
+        bool FineAltitudeModulation;    //Whether to use fine altitude modulation for WSPR encoding, where 1400Hz tone offset is zero, and 1600Hz tone offset is 100% of the fine altitude
         int32_t Correction;    //Frequency correction in parts per billion
         uint8_t AnnounceMode;    //0=No annunciator, 1=LED only
         uint8_t WSPRMessageType;    //Type of WSPR message to send - 

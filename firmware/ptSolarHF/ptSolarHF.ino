@@ -95,7 +95,7 @@ ptTracker Tracker(PIN_LED, PIN_AUDIO, PIN_ANALOG_BATTERY, Config.getAnnounceMode
 GPS GPSParser(PIN_GPS_RX, PIN_GPS_TX, PIN_GPS_EN);                                      //Object that parses the GPS strings
 
 //Keep track of the grid square and altitude between transmissions
-uint8_t coarseAlt;
+uint8_t coarseAlt, fineAlt;
 char szGrid[7];
 
 enum XmitState{
@@ -135,6 +135,8 @@ void setup() {
 
     GPSParser.setDebugNEMA(true);    ///TODO: Need to pull this from Configuration
     GPSParser.setDebugLevel(2);    //Get full verbose output from the GPS
+
+    //GPSParser.testWSPRAltitude();    //Test the WSPR altitude calculation function with some known values to make sure it's working correctly
 }
 
 
@@ -220,7 +222,7 @@ void loop()
     {
 
       // preload the position and altitude so that we don't have to worry about the GPS loosing lock during transmissions
-      coarseAlt = GPSParser.AltitudeWSPRCoarse();
+      GPSParser.getWSPRAltitude(coarseAlt, fineAlt);
       GPSParser.getGridSquare(szGrid, 6);
 
       if ((!GPSParser.FixQuality() || GPSParser.NumSats() < 4) || GPSParser.isRFBlackoutZone())
@@ -360,7 +362,12 @@ static void buildWSPRSymbols(uint8_t msgType) {
  * @note    This function will transmit the WSPR symbols stored in the global wspr_symbols array. It takes about 111 seconds to transmit the entire packet.
  */
 static void sendWSPR(bool useFreq1) {
-    const uint64_t base_cHz = (uint64_t)((useFreq1 ? Config.getFrequencyTx1() : Config.getFrequencyTx2())  + Config.getToneOffset()) * 100ULL;
+    if (Config.getFineAltitudeModulation()) {
+      if (fineAlt > 200) fineAlt = 100;
+    } else {
+      fineAlt = 0;    // If we're not using fine altitude modulation, set the fine altitude to zero so that it doesn't affect the tone frequencies  
+    }
+    const uint64_t base_cHz = (uint64_t)((useFreq1 ? Config.getFrequencyTx1() : Config.getFrequencyTx2()) + Config.getToneOffset() + fineAlt) * 100ULL;
     byte byTemp;
     Serial.print(F("Xmit "));
     Serial.println((useFreq1 ? "freq 1" : "freq 2"));
@@ -502,6 +509,11 @@ void doConfigMode() {
         Config.setCorrection(Config.getCorrection() + 1000);
         Config.writeEEPROM();   //store the change
       }
+      if (byTemp == 'z' || byTemp == 'Z') {
+        //reset to zero
+        Config.setCorrection(0);
+        Config.writeEEPROM();   //store the change
+      }
 
       //Test the transmitter for frequency accuracy. Lower case 't' gives 5 seconds, upper case 'T' gives 30 seconds
       if (byTemp == 't' || byTemp == 'T') {
@@ -518,7 +530,7 @@ void doConfigMode() {
           delay(1000);
           wdt_reset();
         }
-        
+        Serial.println("");
         si5351.output_enable(SI5351_CLK0, 0);
         digitalWrite(PIN_PTT_OUT, LOW);
       }
@@ -564,9 +576,10 @@ void doConfigMode() {
         reboot();    //reboot the system to apply the new configuration
       }
 
-      Serial.print(CONFIG_PROMPT);
+      Serial.println("");
       Serial.print(F(("Corr: ")));
       Serial.println(Config.getCorrection());
+      Serial.print(CONFIG_PROMPT);
       ulUntil = millis() + CONFIG_TIMEOUT;    //reset the timer for the config mode
     }
   }

@@ -63,9 +63,10 @@ void ptConfig::setDefaultConfig() {
     this->_config.AnnounceMode = 1;    //0=No Annunciations, 1=LED, 2=Piezo, 3=Both
     this->_config.HourlyReboot = 0;    //reboot the system every hour   
     strcpy(this->_config.Callsign, "N0CALL");
-    this->_config.FrequencyTx1 = 28126100UL;   //Default to 10m, 28.1261MHz
-    this->_config.FrequencyTx2 = 21093000UL;   //Default to 20m, 14.0970MHz
-    this->_config.ToneOffset = 1500;    //Default tone offset for WSPR audio generation
+    this->_config.FrequencyTx1 = 28124600UL;   //Default to 10m, 28.1246MHz
+    this->_config.FrequencyTx2 = 21094600UL;   //Default to 15m, 21.0946MHz
+    this->_config.ToneOffset = 1400;    //Default tone offset for WSPR audio generation. Default to 1400 if the FineAltitudeModulation is enabled
+    this->_config.FineAltitudeModulation = true;    //Fine altitude modulation for WSPR encoding, where 1400Hz tone offset is zero, and 1600Hz tone offset is 100% of the fine altitude
     this->_config.Correction = 0;    //No frequency correction by default
     this->_config.WSPRMessageType = 2;    //Type 2/3 messages
     this->_config.TxMod = 6;    //Transmit every 6 minutes (minutes modulus 6)
@@ -173,6 +174,12 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
 
           this->readConfigParam(szParam, 9);  //Tone Offset for si5351 //Up to 9 digits, which is well within the range of a signed 32-bit integer
           this->_config.ToneOffset = atoi(szParam);   //Tone offset for generating the WSPR audio
+          if (this->_config.FineAltitudeModulation) {
+            this->_config.ToneOffset = 1400;    //If we're using fine altitude modulation, the tone offset is fixed at 1400Hz, and the altitude information is encoded in the fine modulation of the tones rather than the coarse offset of the tones
+          }
+
+          this->readConfigParam(szParam, sizeof(szParam));
+          this->_config.FineAltitudeModulation = atoi(szParam);   //Fine altitude modulation for WSPR encoding, where 1400Hz tone offset is zero, and 1600Hz tone offset is 100% of the fine altitude
 
           this->readConfigParam(szParam, 9);    //Up to 9 digits, which is well within the range of a signed 32-bit integer
           this->_config.Correction = this->atoi32(szParam);    //Frequency correction in parts per billion
@@ -230,6 +237,9 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
     Serial.print(this->_config.FrequencyTx2, DEC);
     Serial.write(0x09);
     Serial.print(this->_config.ToneOffset, DEC);
+    Serial.write(0x09);
+    if (this->_config.FineAltitudeModulation) Serial.write("1");    //Fine altitude modulation for WSPR encoding, where 1400Hz tone offset is zero, and 1600Hz tone offset is 100% of the fine altitude
+    else Serial.write("0");
     Serial.write(0x09);
     Serial.print(this->_config.Correction, DEC);    //Frequency Correction
     Serial.write(0x09);
