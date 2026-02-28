@@ -187,119 +187,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Connector_Generic:Conn_01x01"
-			(pin_names
-				(offset 1.016)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "J"
-				(at 0 2.54 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "Conn_01x01"
-				(at 0 -2.54 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "~"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Generic connector, single row, 01x01, script generated (kicad-library-utils/schlib/autogen/connector/)"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "connector"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "Connector*:*_1x??_*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "Conn_01x01_1_1"
-				(rectangle
-					(start -1.27 1.27)
-					(end 1.27 -1.27)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(rectangle
-					(start -1.27 0.127)
-					(end 0 -0.127)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin passive line
-					(at -5.08 0 0)
-					(length 3.81)
-					(name "Pin_1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "Connector_Generic:Conn_01x03"
 			(pin_names
 				(offset 1.016)
@@ -5162,12 +5049,6 @@
 		(uuid "a2679b97-ae30-43b7-a51b-5fa79f212a74")
 	)
 	(junction
-		(at 369.57 97.79)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a8a7226f-bbc7-4880-b8b0-cac7ca6f77f3")
-	)
-	(junction
 		(at 288.29 148.59)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5220,12 +5101,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "eb125c85-29d4-4472-af48-4cc7f1e7ca69")
-	)
-	(junction
-		(at 369.57 86.36)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "eec98a8d-0d59-433a-885d-d31ec0d10b9f")
 	)
 	(junction
 		(at 328.93 86.36)
@@ -6453,16 +6328,6 @@
 	)
 	(wire
 		(pts
-			(xy 369.57 97.79) (xy 369.57 99.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8432ee75-63c2-4805-864e-dcc9bfc89236")
-	)
-	(wire
-		(pts
 			(xy 292.1 218.44) (xy 281.94 218.44)
 		)
 		(stroke
@@ -6683,7 +6548,7 @@
 	)
 	(wire
 		(pts
-			(xy 369.57 96.52) (xy 369.57 97.79)
+			(xy 369.57 96.52) (xy 369.57 99.06)
 		)
 		(stroke
 			(width 0)
@@ -8605,91 +8470,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x01")
-		(at 374.65 97.79 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "22819ad5-3524-46f6-8e9c-9954969d91a2")
-		(property "Reference" "ANT2b1"
-			(at 377.19 97.7899 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "VHF Test Point"
-			(at 377.19 99.0599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Footprint" "Custom DS:Small Test Point Pin"
-			(at 374.65 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 374.65 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x01, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 374.65 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Field6" ""
-			(at 374.65 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 374.65 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "d83b2284-9905-47b0-aaaa-8c383d0cc8f3")
-		)
-		(instances
-			(project ""
-				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
-					(reference "ANT2b1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R_US")
 		(at 209.55 88.9 0)
 		(unit 1)
@@ -8979,7 +8759,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "150pF"
+		(property "Value" "180pF"
 			(at 340.36 92.456 0)
 			(effects
 				(font
@@ -9015,7 +8795,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "490-3315-1-ND"
+		(property "Digikey" "490-11541-1-ND"
 			(at 339.09 95.25 0)
 			(effects
 				(font
@@ -9024,7 +8804,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "LCSC" "C113826"
 			(at 339.09 95.25 0)
 			(effects
 				(font
@@ -9154,7 +8934,7 @@
 				)
 			)
 		)
-		(property "Value" "270nH"
+		(property "Value" "330nH"
 			(at 334.01 83.82 90)
 			(effects
 				(font
@@ -9189,7 +8969,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "490-5671-1-ND"
+		(property "Digikey" "490-5672-1-ND"
 			(at 334.01 86.36 90)
 			(effects
 				(font
@@ -9198,7 +8978,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "LCSC" "C184530"
 			(at 334.01 86.36 0)
 			(effects
 				(font
@@ -9786,7 +9566,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "150pF"
+		(property "Value" "180pF"
 			(at 301.244 92.71 0)
 			(effects
 				(font
@@ -9822,7 +9602,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "490-3315-1-ND"
+		(property "Digikey" "490-11541-1-ND"
 			(at 308.61 95.25 0)
 			(effects
 				(font
@@ -9831,7 +9611,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "LCSC" "C113826"
 			(at 308.61 95.25 0)
 			(effects
 				(font
@@ -10625,7 +10405,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "LCSC" "C49678"
 			(at 289.56 86.36 0)
 			(effects
 				(font
@@ -11702,7 +11482,7 @@
 				)
 			)
 		)
-		(property "Value" "270nF"
+		(property "Value" "330nH"
 			(at 313.69 83.82 90)
 			(effects
 				(font
@@ -11737,7 +11517,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "490-5671-1-ND"
+		(property "Digikey" "490-5672-1-ND"
 			(at 313.69 86.36 90)
 			(effects
 				(font
@@ -11746,7 +11526,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "LCSC" "C184530"
 			(at 313.69 86.36 0)
 			(effects
 				(font
@@ -11771,91 +11551,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x01")
-		(at 374.65 86.36 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "aca6d422-e43e-4941-9e10-339258e22f02")
-		(property "Reference" "ANT2a1"
-			(at 377.19 86.3599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "VHF Test Point"
-			(at 377.19 87.6299 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Footprint" "Custom DS:Small Test Point Pin"
-			(at 374.65 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 374.65 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x01, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 374.65 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Field6" ""
-			(at 374.65 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 374.65 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "c6195390-af8c-4104-bd97-34de2643817d")
-		)
-		(instances
-			(project ""
-				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
-					(reference "ANT2a1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:C")
 		(at 318.77 95.25 180)
 		(unit 1)
@@ -11873,7 +11568,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "220pF"
+		(property "Value" "270pF"
 			(at 312.166 99.314 0)
 			(effects
 				(font
@@ -11909,7 +11604,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "490-1616-1-ND"
+		(property "Digikey" "490-9738-1-ND"
 			(at 318.77 95.25 0)
 			(effects
 				(font
@@ -11918,7 +11613,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "LCSC" "C527183"
 			(at 318.77 95.25 0)
 			(effects
 				(font
@@ -11937,94 +11632,6 @@
 			(project "ptSolar"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C17")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 287.02 69.85 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "ad912109-aa91-41b1-afcc-099f8b575f68")
-		(property "Reference" "C23"
-			(at 288.036 69.215 0)
-			(effects
-				(font
-					(size 1.778 1.5113)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Value" "100pF"
-			(at 288.036 74.041 0)
-			(effects
-				(font
-					(size 1.778 1.5113)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
-			(at 287.9852 73.66 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 287.02 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 287.02 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Digikey" "399-17420-2-ND"
-			(at 287.02 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left bottom)
-				(hide yes)
-			)
-		)
-		(property "LCSC" ""
-			(at 287.02 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "5832c7de-6a6f-4eb8-a64b-57455fcffb79")
-		)
-		(pin "2"
-			(uuid "d0b9aea5-2a9a-45c2-a83c-233d1427114c")
-		)
-		(instances
-			(project "ptSolarHF"
-				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
-					(reference "C23")
 					(unit 1)
 				)
 			)
@@ -12459,7 +12066,7 @@
 				(justify left bottom)
 			)
 		)
-		(property "Value" "150k"
+		(property "Value" "10k"
 			(at 363.22 90.932 0)
 			(effects
 				(font
@@ -12495,7 +12102,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-150KCRCT-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 355.6 93.98 0)
 			(effects
 				(font
@@ -12505,7 +12112,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C114558"
+		(property "LCSC" "C100047"
 			(at 355.6 93.98 0)
 			(effects
 				(font
@@ -13143,7 +12750,7 @@
 				)
 			)
 		)
-		(property "Value" "270nH"
+		(property "Value" "390nH"
 			(at 323.85 83.82 90)
 			(effects
 				(font
@@ -13178,7 +12785,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "490-5671-1-ND"
+		(property "Digikey" "490-5673-1-ND"
 			(at 323.85 86.36 90)
 			(effects
 				(font
@@ -13187,7 +12794,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "LCSC" "C108076"
 			(at 323.85 86.36 0)
 			(effects
 				(font
@@ -13206,94 +12813,6 @@
 			(project "ptSolar"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "L2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 278.13 69.85 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "ca84dd0f-1b19-4f9c-a32e-93cf7a09d05a")
-		(property "Reference" "C22"
-			(at 279.146 69.215 0)
-			(effects
-				(font
-					(size 1.778 1.5113)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Value" "1000pF"
-			(at 279.146 74.041 0)
-			(effects
-				(font
-					(size 1.778 1.5113)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
-			(at 279.0952 73.66 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 278.13 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 278.13 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Digikey" "399-15433-2-ND"
-			(at 278.13 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left bottom)
-				(hide yes)
-			)
-		)
-		(property "LCSC" ""
-			(at 278.13 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "6bb50c9a-54a8-449b-8a3e-e15eec0c156c")
-		)
-		(pin "2"
-			(uuid "d838ed9c-2fd8-49f2-abcc-76d9707028a6")
-		)
-		(instances
-			(project "ptSolarHF"
-				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
-					(reference "C22")
 					(unit 1)
 				)
 			)
@@ -13352,6 +12871,15 @@
 			)
 		)
 		(property "Digikey" "887-1328-1-ND"
+			(at 234.95 86.36 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2450429"
 			(at 234.95 86.36 90)
 			(effects
 				(font
@@ -14068,7 +13596,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "220pF"
+		(property "Value" "270pF"
 			(at 329.946 99.822 0)
 			(effects
 				(font
@@ -14104,7 +13632,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "490-1616-1-ND"
+		(property "Digikey" "490-9738-1-ND"
 			(at 328.93 95.25 0)
 			(effects
 				(font
@@ -14113,7 +13641,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "LCSC" "C527183"
 			(at 328.93 95.25 0)
 			(effects
 				(font
@@ -14773,7 +14301,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "6V 1F"
+		(property "Value" "6V 0.5F"
 			(at 107.95 208.9149 0)
 			(effects
 				(font
@@ -14809,7 +14337,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "4688-CSP-6R0L105R-TW-ND"
+		(property "Digikey" "4688-CSP-6R0L504R-TW-ND"
 			(at 104.14 208.28 0)
 			(effects
 				(font
@@ -15226,7 +14754,16 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "  336-2399-5-ND"
+		(property "Digikey" "336-2399-5-ND"
+			(at 264.16 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C504891"
 			(at 264.16 91.44 0)
 			(effects
 				(font
