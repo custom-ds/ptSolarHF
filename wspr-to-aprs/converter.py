@@ -6,7 +6,7 @@ import os
 import bs4
 from urllib.request import urlopen
 from math import radians, cos, sin, asin, sqrt, atan2, degrees
-from datetime import datetime, time
+from datetime import datetime, time, timezone
 import time as time_module
 import re
 
@@ -39,10 +39,11 @@ def main():
             callsignGated = flight.get("callsignGated", "N0CALL")
             band = flight.get("band", "10")
             lastHeard = datetime.strptime(flight.get("lastHeard"), '%Y-%m-%d %H:%M:%S')
+            lastLocation = flight.get("lastLocation", "")
             telemetry = flight.get("telemetry", "traveler")
 
             #Go check to see if we have a new spot for this callsign, that's newer than the lastHeard
-            spot = getSpot(callsign, band, lastHeard)
+            spot = getSpot(callsign, band, lastHeard, lastLocation)
 
             #See if there was a newer spot found
             if spot:
@@ -70,12 +71,12 @@ def main():
                 messageaprs = (f"{callsignGated}>APRS,TCPIP*:@{aprsHHMMSS}h{latlon}{aprsSymbol}{aprsCourse}/{aprsSpeed}/A={aprsAltitudeCoarse} {status}\r\n").encode('utf8')
                 messageaprs = messageaprs.decode('utf8')        #Convert to bytes for APRS-IS
 
-                print("Spot Details:")
-                print(aprsHHMMSS)
-                print(callsignGated)
-                print(wsprAltitudeCoarse)
-                print(latlon)
-                print(status)
+                # print("Spot Details:")
+                # print(aprsHHMMSS)
+                # print(callsignGated)
+                # print(wsprAltitudeCoarse)
+                # print(latlon)
+                # print(status)
 
                 print("APRS Message:")
                 print(messageaprs)
@@ -83,25 +84,67 @@ def main():
                 print("Sending to APRS-IS!")
                 sendToAPRSIS(aprsCallsign, aprsPasscode, messageaprs)
            
-                #Write the updated lastHeard time back out to the config file
+                #Write the updated lastHeard time and lastLocation back out to the config file
                 with open(config_path, "w") as config_file:
                     # Convert datetime objects back to strings for JSON serialization
                     flight["lastHeard"] = spot['Datetime'].strftime("%Y-%m-%d %H:%M:%S")
+                    flight["lastLocation"] = spot['Gridsquare']
+                    flight["lastAltitude"] = wsprAltitudeCoarse
                     json.dump(config, config_file, indent=4)
 
         #Delay x seconds before checking again
         print()
+
+        #Print a table of all of the stations being tracked, when they were last heard, and their last known location
+        print("Current Flight Status:")
+        print(f"{'Callsign':<10} {'Last Heard':<20} {'Location':<10} {'Alt':<8} {'Relative Time'}")
+        for flight in flights:
+
+            utcNow = datetime.now(timezone.utc)
+            utcLastHeard = datetime.strptime(flight.get("lastHeard", "1970-01-01 00:00:00"), '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
+
+            relativeTime = getFriendlyRelativeTime(utcNow, utcLastHeard)  
+            callsign = flight.get("callsign", "N0CALL")
+            lastHeard = flight.get("lastHeard", "N/A")
+            lastLocation = flight.get("lastLocation", "N/A")
+            altitude = flight.get("lastAltitude", "N/A")
+            print(f"{callsign:<10} {utcLastHeard.strftime('%Y-%m-%d %H:%M:%S'):<20} {lastLocation:<10} {altitude:<8} ({relativeTime})")
+
         print(f"Waiting {cycleDelay} seconds before checking for new spots...")
         time_module.sleep(cycleDelay)        
 
 
+def getFriendlyRelativeTime(dtA, dtB):
+    """
+    Get a friendly relative time string between two datetime objects.
+    
+    :param dtA: The first datetime object
+    :param dtB: The second datetime object
+    :return: A string representing the relative time (e.g., "5 minutes ago")
+    """
+    delta = dtA - dtB
+    seconds = int(delta.total_seconds())
+    
+    if seconds < 60:
+        return f"{seconds} seconds ago"
+    elif seconds < 3600:
+        minutes = seconds // 60
+        return f"{minutes} minutes ago"
+    elif seconds < 86400:
+        hours = seconds // 3600
+        return f"{hours} hours ago"
+    else:
+        days = seconds // 86400
+        return f"{days} days ago"
+    
 
-def getSpot(callsign, band, lastSpotTime):
+def getSpot(callsign, band, lastSpotTime, lastSpotGrid):
     """
     Get the most recent WSPR spots for a given callsign from WSPRnet.
     
     :param callsign: The callsign to search for
     :param lastSpotTime: The last time a spot was recorded
+    :param lastSpotGrid: The last grid square recorded
     :return: A list of spots as dictionaries
     """
     print()
@@ -124,6 +167,9 @@ def getSpot(callsign, band, lastSpotTime):
         print("--> Error parsing HTML from WSPRnet")
         return None
     
+
+    if lastSpotGrid is not None:
+        lastSpotGrid = ""
 
     try:
         # Convert HTML table to array (3rd table on the page)
@@ -158,8 +204,14 @@ def getSpot(callsign, band, lastSpotTime):
             #Check if lastSpotTime is not None and if the spot is newer than lastSpotTime
             if (spot['Datetime'] is not None and lastSpotTime is not None):
                 if spot['Datetime'] > lastSpotTime:
-                    print("New spot found:")
-                    return spot
+                    print("Newer spot found:")
+                    if spot['Gridsquare'] != lastSpotGrid:
+                        print("  Newer spot found with different grid square:")
+
+                        if (spot['Gridsquare'] != "JJ00aa"):
+                            print("  ...found a grid square that wasn't 0,0, so returning this spot")
+                            print(spot)
+                            return spot
     except:
         print("--> Error processing spots")
         return None
