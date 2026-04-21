@@ -24,17 +24,7 @@ This firmware requires the following libraries to be installed with the Library 
 */
 
 
-
-
-///TODO: Add option to tweak correction factor into the maintenance mode - DONE
-///TODO: Implement dual frequency - DONE
-///TODO: Update Configurator to utilize bitmasking for settings - DONE
-///TODO: Remove extra debugging output - DONE
-///TODO: Refactor getGrid so that it calculates each go around, and stores - ???
-///TODO: Reboot hourly is not working - ???
-
-
-#define FIRMWARE_VERSION "1.0.0"
+#define FIRMWARE_VERSION "1.0.1"
 #define CONFIG_PROMPT "\n\n# "
 #include "BoardDef.h"   //defines if this is a ptFlex, ptSolar, or ptSolarHF PCB board
 

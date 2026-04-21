@@ -11,6 +11,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Version History:
+Version 2.2.1 - April 11, 2026 - Fixed issue with Korean RF blackout.
 Version 2.2.0 - January 26, 2026 - Functionality added to support WSPR mode.
                   * Added function to calculate Maidenhead grid square from latitude and longitude. 
 				  * Changed time to uint8_t, and set 99 as invalid. 
@@ -291,8 +292,7 @@ void GPS::clearInputBuffer() {
  * @note   This function will add a character to the GPS string buffer and parse it for valid sentences.
  */
 void GPS::addChar(char c) {
-
-char szGrid6[7];                    
+	//first make sure we still have room in the _szTemp for another char (and null termiation)
 	if (_iTempPtr >= (_MAX_SENTENCE_LEN - 2)) {
 		//we're full and we apparently didn't find an end of string - throw the szTemp away and lets start over
 		this->_szTemp[0] = 0;
@@ -326,13 +326,11 @@ char szGrid6[7];
 				//we have the start of an RMC string
 
 				if (this->_outputNEMA) Serial.println(this->_szTemp);		//dump the GPS sentence to the serial port if desired.
-				Serial.flush();
 				this->_bRMCComplete = true;    //set a flag indicating that an RMC sentence has been received, therefore we have valid data
 
 				//Serial.println(F("Validating RMC"));
 				//this->validateGPSSentence(this->_szTemp, 13, 23);	//validate the GGA sentence to make sure it has the right number of commas and is long enough
 				this->parseRMC();
-this->getGridSquare(szGrid6, 6);	//first make sure we still have room in the _szTemp for another char (and null termiation)
 
 				this->_bGotNewRMC = true;      //set a temporary flag indicating that we got a new RMC sentence
 				this->_lastDecodedMillis = millis();    //keep track of the time when we last received a sentence
@@ -341,13 +339,11 @@ this->getGridSquare(szGrid6, 6);	//first make sure we still have room in the _sz
 				//we have the start of an GGA string
 				
 				if (this->_outputNEMA) Serial.println(this->_szTemp);		//dump the GPS sentence to the serial port if desired.
-				Serial.flush();
 				this->_bGGAComplete = true;
 
 				//Serial.println(F("Validating GGA"));
 				//this->validateGPSSentence(this->_szTemp, 14, 30);	//validate the GGA sentence to make sure it has the right number of commas and is long enough
 				this->parseGGA();
-this->getGridSquare(szGrid6, 6);	//first make sure we still have room in the _szTemp for another char (and null termiation)
 
 				this->_bGotNewGGA = true;      //set a temporary flag indicating that we got a new RMC sentence
 				this->_lastDecodedMillis = millis();    //keep track of the time when we last received a sentence
@@ -413,7 +409,6 @@ void GPS::parseRMC() {
 		szB[1] = sz[5];
 		this->_currTime.ss = atoi(szB);
 	}
-
 
 	ptrTemp = this->skipToNext(ptrTemp);			//skip thru the rest of the chars in the time
 
@@ -758,7 +753,7 @@ bool GPS::isRFBlackoutZone() {
 	if (iLat >= 1148 && iLat <= 1912 && iLon >= 4200 && iLon <= 5442) return true;
 
 	//Check for North Korea
-	if (iLat >= 3742 && iLat <= 4306 && iLon >= 13100 && iLon <= 12400) return true;
+	if (iLat >= 3742 && iLat <= 4306 && iLon >= 12400 && iLon <= 13100) return true;
 
 	return false;	//we're not in a blackout zone
 }
