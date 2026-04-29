@@ -5,13 +5,14 @@
     "Flights": [
         {
             "callsign": "W0ZC/16",
-            "band": "10",
-            "lastHeard": "2026-02-03 19:00:00"
-        },
-        {
-            "callsign": "W0ZC/17",
+            "callsignGated": "W0ZC-16",
             "band": "all",
-            "lastHeard": "2026-02-06 01:00:00"
+            "telemetry": "traveler",
+            "comments": "Pico Flight 1",
+            "firstHeard": null,
+            "lastHeard": null,
+            "lastLocation": null,
+            "lastAltitude": null
         }
     ]
 }

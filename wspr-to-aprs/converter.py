@@ -38,9 +38,13 @@ def main():
             callsign = flight.get("callsign", "N0CALL")
             callsignGated = flight.get("callsignGated", "N0CALL")
             band = flight.get("band", "10")
-            lastHeard = datetime.strptime(flight.get("lastHeard"), '%Y-%m-%d %H:%M:%S')
-            lastLocation = flight.get("lastLocation", "")
+            lastHeardStr = flight.get("lastHeard", None)
+            lastHeard = datetime.strptime(lastHeardStr, '%Y-%m-%d %H:%M:%S') if lastHeardStr else None
+            lastLocation = flight.get("lastLocation", None) or ""
             telemetry = flight.get("telemetry", "traveler")
+            comments = flight.get("comments", "")
+            firstHeardStr = flight.get("firstHeard", None)
+            firstHeard = datetime.strptime(firstHeardStr, '%Y-%m-%d %H:%M:%S') if firstHeardStr else None
 
             #Go check to see if we have a new spot for this callsign, that's newer than the lastHeard
             spot = getSpot(callsign, band, lastHeard, lastLocation)
@@ -66,7 +70,9 @@ def main():
                 aprsSymbol = 'O' #APRS Balloon Symbol
                 aprsCourse = '000' #APRS Course
                 aprsSpeed = '000'  #APRS Speed
-                status = f"WSPR by {spot['ReportedBy']} on {spot['Frequency']}MHz SNR {spot['SNR']} at {spot['Datetime'].strftime('%H%M')}" 
+                flightStart = firstHeard if firstHeard else spot['Datetime']
+                daysAloft = (spot['Datetime'] - flightStart).total_seconds() / 86400
+                status = f"WSPR by {spot['ReportedBy']} on {spot['Frequency']}MHz SNR {spot['SNR']} at {spot['Datetime'].strftime('%H%M')} Day {daysAloft:.1f} - {comments}"
 
                 messageaprs = (f"{callsignGated}>APRS,TCPIP*:@{aprsHHMMSS}h{latlon}{aprsSymbol}{aprsCourse}/{aprsSpeed}/A={aprsAltitudeCoarse} {status}\r\n").encode('utf8')
                 messageaprs = messageaprs.decode('utf8')        #Convert to bytes for APRS-IS
@@ -87,6 +93,8 @@ def main():
                 #Write the updated lastHeard time and lastLocation back out to the config file
                 with open(config_path, "w") as config_file:
                     # Convert datetime objects back to strings for JSON serialization
+                    if not flight.get("firstHeard"):
+                        flight["firstHeard"] = spot['Datetime'].strftime("%Y-%m-%d %H:%M:%S")
                     flight["lastHeard"] = spot['Datetime'].strftime("%Y-%m-%d %H:%M:%S")
                     flight["lastLocation"] = spot['Gridsquare']
                     flight["lastAltitude"] = wsprAltitudeCoarse
@@ -97,18 +105,35 @@ def main():
 
         #Print a table of all of the stations being tracked, when they were last heard, and their last known location
         print("Current Flight Status:")
-        print(f"{'Callsign':<10} {'Last Heard':<20} {'Location':<10} {'Alt':<8} {'Relative Time'}")
+        print(f"{'Callsign':<10} {'First Heard':<17} {'Last Heard':<17} {'Location':<10} {'Alt':<8} {'Days Aloft':<12} {'Relative Time':<20} {'Comments':<32} {'URL'}")
         for flight in flights:
 
             utcNow = datetime.now(timezone.utc)
-            utcLastHeard = datetime.strptime(flight.get("lastHeard", "1970-01-01 00:00:00"), '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
 
-            relativeTime = getFriendlyRelativeTime(utcNow, utcLastHeard)  
+            lastHeardStr = flight.get("lastHeard", None)
+            utcLastHeard = datetime.strptime(lastHeardStr, '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc) if lastHeardStr else None
+            lastHeardDisplay = utcLastHeard.strftime('%Y-%m-%d %H:%M') if utcLastHeard else "N/A"
+            relativeTime = getFriendlyRelativeTime(utcNow, utcLastHeard) if utcLastHeard else "N/A"
+
+            firstHeardStr = flight.get("firstHeard", None)
+            utcFirstHeard = datetime.strptime(firstHeardStr, '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc) if firstHeardStr else None
+            firstHeardDisplay = utcFirstHeard.strftime('%Y-%m-%d %H:%M') if utcFirstHeard else "N/A"
+
+            if utcFirstHeard and utcLastHeard:
+                daysAloft = (utcLastHeard - utcFirstHeard).total_seconds() / 86400
+                daysAloftStr = f"{daysAloft:.1f}"
+            else:
+                daysAloftStr = "N/A"
+
             callsign = flight.get("callsign", "N0CALL")
-            lastHeard = flight.get("lastHeard", "N/A")
-            lastLocation = flight.get("lastLocation", "N/A")
-            altitude = flight.get("lastAltitude", "N/A")
-            print(f"{callsign:<10} {utcLastHeard.strftime('%Y-%m-%d %H:%M:%S'):<20} {lastLocation:<10} {altitude:<8} ({relativeTime})")
+            callsignGated = flight.get("callsignGated", "N0CALL")
+            lastLocation = flight.get("lastLocation", None) or "N/A"
+            altitude = flight.get("lastAltitude", None)
+            altitude = altitude if altitude is not None else "N/A"
+            comments = flight.get("comments", "") or ""
+            commentsShort = comments[:32]
+            url = f"https://aprs.fi/{callsignGated}"
+            print(f"{callsign:<10} {firstHeardDisplay:<17} {lastHeardDisplay:<17} {lastLocation:<10} {altitude:<8} {daysAloftStr:<12} {f'({relativeTime})':<20} {commentsShort:<32} {url}")
 
         print(f"Waiting {cycleDelay} seconds before checking for new spots...")
         time_module.sleep(cycleDelay)        
