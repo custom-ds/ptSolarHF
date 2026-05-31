@@ -2,6 +2,7 @@ import json
 import socket
 from typing import Optional, Tuple
 import os
+import csv
 
 import bs4
 from urllib.request import urlopen
@@ -87,9 +88,12 @@ def main():
                 print("APRS Message:")
                 print(messageaprs)
 
+                altitudeMeters = int(wsprAltitudeCoarse / 3.28084)
+                logSpot(script_dir, callsign, spot, lat, lon, altitudeMeters, wsprAltitudeCoarse, daysAloft)
+
                 print("Sending to APRS-IS!")
                 sendToAPRSIS(aprsCallsign, aprsPasscode, messageaprs)
-           
+
                 #Write the updated lastHeard time and lastLocation back out to the config file
                 with open(config_path, "w") as config_file:
                     # Convert datetime objects back to strings for JSON serialization
@@ -163,6 +167,149 @@ def getFriendlyRelativeTime(dtA, dtB):
         return f"{days} days ago"
     
 
+LOG_FIELDS = [
+    'Datetime', 'Callsign', 'Frequency', 'SNR', 'Drift',
+    'Gridsquare', 'Latitude', 'Longitude',
+    'dBm', 'AltitudeMeters', 'AltitudeFeet',
+    'ReportedBy', 'ReportedByGridsquare', 'DistanceKM', 'DistanceMiles',
+    'DaysAloft', 'Watts', 'Version',
+]
+
+def logSpot(script_dir, callsign, spot, lat, lon, altitudeMeters, altitudeFeet, daysAloft):
+    """
+    Append one position record to logs/<callsign>.log and regenerate
+    logs/<callsign>_track.kml from the full CSV history.
+    """
+    safe_callsign = callsign.replace('/', '-')
+    
+    os.makedirs(log_dir, exist_ok=True)
+    log_path = os.path.join(log_dir, f"{safe_callsign}.log")
+
+    write_header = not os.path.exists(log_path)
+
+    row = {
+        'Datetime':             spot['Datetime'].strftime('%Y-%m-%d %H:%M:%S'),
+        'Callsign':             spot.get('Callsign', callsign),
+        'Frequency':            spot.get('Frequency', ''),
+        'SNR':                  spot.get('SNR', ''),
+        'Drift':                spot.get('Drift', ''),
+        'Gridsquare':           spot.get('Gridsquare', ''),
+        'Latitude':             f"{lat:.6f}",
+        'Longitude':            f"{lon:.6f}",
+        'dBm':                  spot.get('dBm', ''),
+        'AltitudeMeters':       altitudeMeters,
+        'AltitudeFeet':         altitudeFeet,
+        'ReportedBy':           spot.get('ReportedBy', ''),
+        'ReportedByGridsquare': spot.get('ReportedByGridsquare', ''),
+        'DistanceKM':           spot.get('DistanceKM', ''),
+        'DistanceMiles':        spot.get('DistanceMiles', ''),
+        'DaysAloft':            f"{daysAloft:.4f}",
+        'Watts':                spot.get('Watts', ''),
+        'Version':              spot.get('Version', ''),
+    }
+
+    with open(log_path, 'a', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=LOG_FIELDS)
+        if write_header:
+            writer.writeheader()
+        writer.writerow(row)
+
+    print(f"  Logged to {log_path}")
+
+    kml_path = os.path.join(log_dir, f"{safe_callsign}_track.kml")
+    writeKml(log_path, kml_path, callsign)
+    print(f"  KML updated: {kml_path}")
+
+
+def writeKml(log_path, kml_path, callsign):
+    """
+    Rebuild <callsign>_track.kml from the full CSV log.
+    Produces one Placemark per position (with TimeStamp) and a LineString
+    showing the complete flight path.
+    """
+    rows = []
+    with open(log_path, newline='') as f:
+        for row in csv.DictReader(f):
+            rows.append(row)
+
+    if not rows:
+        return
+
+    def esc(s):
+        return str(s).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+    placemarks = []
+    track_coords = []
+
+    for r in rows:
+        lon = r['Longitude']
+        lat = r['Latitude']
+        alt = r['AltitudeMeters']
+        dt_str = r['Datetime']           # "2026-05-30 12:00:00"
+        kml_when = dt_str.replace(' ', 'T') + 'Z'
+        coord = f"{lon},{lat},{alt}"
+        track_coords.append(coord)
+
+        desc = (
+            f"Grid: {esc(r['Gridsquare'])}&#10;"
+            f"Altitude: {esc(r['AltitudeFeet'])} ft ({esc(r['AltitudeMeters'])} m)&#10;"
+            f"Frequency: {esc(r['Frequency'])} MHz&#10;"
+            f"SNR: {esc(r['SNR'])} dB&#10;"
+            f"Drift: {esc(r['Drift'])} Hz&#10;"
+            f"Power: {esc(r['dBm'])} dBm ({esc(r['Watts'])} W)&#10;"
+            f"Reported by: {esc(r['ReportedBy'])} ({esc(r['ReportedByGridsquare'])})&#10;"
+            f"Distance: {esc(r['DistanceKM'])} km / {esc(r['DistanceMiles'])} mi&#10;"
+            f"Days aloft: {esc(r['DaysAloft'])}"
+        )
+
+        placemarks.append(f"""\
+    <Placemark>
+      <name>{esc(dt_str)}</name>
+      <TimeStamp><when>{kml_when}</when></TimeStamp>
+      <description>{desc}</description>
+      <styleUrl>#spotStyle</styleUrl>
+      <Point>
+        <altitudeMode>absolute</altitudeMode>
+        <coordinates>{coord}</coordinates>
+      </Point>
+    </Placemark>""")
+
+    track_coord_str = ' '.join(track_coords)
+
+    kml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>{esc(callsign)} Flight Track</name>
+    <Style id="spotStyle">
+      <IconStyle>
+        <color>ffffffff</color>
+        <scale>0.7</scale>
+        <Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon>
+      </IconStyle>
+    </Style>
+    <Style id="trackStyle">
+      <LineStyle>
+        <color>ff0000ff</color>
+        <width>2</width>
+      </LineStyle>
+    </Style>
+    <Placemark>
+      <name>Flight Path</name>
+      <styleUrl>#trackStyle</styleUrl>
+      <LineString>
+        <altitudeMode>absolute</altitudeMode>
+        <coordinates>{track_coord_str}</coordinates>
+      </LineString>
+    </Placemark>
+{chr(10).join(placemarks)}
+  </Document>
+</kml>
+"""
+
+    with open(kml_path, 'w', encoding='utf-8') as f:
+        f.write(kml)
+
+
 def getSpot(callsign, band, lastSpotTime, lastSpotGrid):
     """
     Get the most recent WSPR spots for a given callsign from WSPRnet.
@@ -193,7 +340,7 @@ def getSpot(callsign, band, lastSpotTime, lastSpotGrid):
         return None
     
 
-    if lastSpotGrid is not None:
+    if lastSpotGrid is None:
         lastSpotGrid = ""
 
     try:
@@ -227,16 +374,14 @@ def getSpot(callsign, band, lastSpotTime, lastSpotGrid):
         #Loop through the spots in reverse order (oldest to newest) and find any spot newer than lastSpotTime
         for spot in reversed(spots):
             #Check if lastSpotTime is not None and if the spot is newer than lastSpotTime
-            if (spot['Datetime'] is not None and lastSpotTime is not None):
-                if spot['Datetime'] > lastSpotTime:
-                    print("Newer spot found:")
-                    if spot['Gridsquare'] != lastSpotGrid:
-                        print("  Newer spot found with different grid square:")
-
-                        if (spot['Gridsquare'] != "JJ00aa"):
-                            print("  ...found a grid square that wasn't 0,0, so returning this spot")
-                            print(spot)
-                            return spot
+            if spot['Datetime'] is not None and (lastSpotTime is None or spot['Datetime'] > lastSpotTime):
+                print("Newer spot found:")
+                if spot['Gridsquare'] != lastSpotGrid:
+                    print("  Newer spot found with different grid square:")
+                    if (spot['Gridsquare'] != "JJ00aa"):
+                        print("  ...found a grid square that wasn't 0,0, so returning this spot")
+                        print(spot)
+                        return spot
     except:
         print("--> Error processing spots")
         return None
@@ -369,7 +514,9 @@ def sendToAPRSIS(callsign: str, passcode: str, packet: str, server: str = "rotat
         s.sendall(packet_line.encode("latin-1", errors="replace"))
 
         return verified, banner.strip()
-
+    except OSError as exc:
+        print(f"APRS-IS connection failed: {exc}")
+        return False, ""
     finally:
         try:
             s.shutdown(socket.SHUT_RDWR)

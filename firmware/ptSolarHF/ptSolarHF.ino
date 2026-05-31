@@ -124,7 +124,7 @@ void setup() {
     si5351.output_enable(SI5351_CLK0, 0);       //Turn off any outputs for now
 
     GPSParser.setDebugNEMA(true);    ///TODO: Need to pull this from Configuration
-    GPSParser.setDebugLevel(2);    //Get full verbose output from the GPS
+    GPSParser.setDebugLevel(1);    //Get full verbose output from the GPS
 
     //GPSParser.testWSPRAltitude();    //Test the WSPR altitude calculation function with some known values to make sure it's working correctly
 }
