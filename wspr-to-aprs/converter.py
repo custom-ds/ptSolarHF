@@ -181,8 +181,10 @@ def logSpot(script_dir, callsign, spot, lat, lon, altitudeMeters, altitudeFeet, 
     logs/<callsign>_track.kml from the full CSV history.
     """
     safe_callsign = callsign.replace('/', '-')
-    
+    log_dir = os.path.join(script_dir, 'logs')
     os.makedirs(log_dir, exist_ok=True)
+
+    
     log_path = os.path.join(log_dir, f"{safe_callsign}.log")
 
     write_header = not os.path.exists(log_path)
