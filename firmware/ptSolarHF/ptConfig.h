@@ -106,10 +106,10 @@ class ptConfig {
         int32_t Correction;    //Frequency correction in parts per billion
         uint8_t AnnounceMode;    //0=No annunciator, 1=LED only
         uint8_t WSPRMessageType;    //Type of WSPR message to send - 
-                        // 0 = Type 1 - Standard WSPR message with callsign, 4-digit grid square, and altitude
-                        // 1 = Type 2/Type 3 - Compressed WSPR message with callsign, 6-digit grid square, and altitude pair
-                        // 10 = Type 1 message, same as 0 except alternating between the two transmit frequencies
-                        // 11 = Type 2/Type 3 message, same as 1 except alternating between the two transmit frequencies
+                        // 1 = Type 1 - Standard WSPR message with callsign, 4-digit grid square, and altitude
+                        // 2 = Type 2/Type 3 - Compressed WSPR message with callsign, 6-digit grid square, and altitude pair
+                        // 129 = Type 1 message, same as 0 except alternating between the two transmit frequencies
+                        // 130 = Type 2/Type 3 message, same as 1 except alternating between the two transmit frequencies
         uint8_t TxMod;    //How often to transmit = 2=every 2 minutes, 4=every 4 minutes, etc. Must be a multiple of 2
         uint8_t TxModOffset;    //Offset within the TxMod to transmit on.  For example, if TxMod=4 and TxModOffset=2, it will transmit at minutes 2, 6, 10, etc.
         bool HourlyReboot;
