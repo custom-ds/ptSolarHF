@@ -42,14 +42,13 @@ def main():
             lastHeardStr = flight.get("lastHeard", None)
             lastHeard = datetime.strptime(lastHeardStr, '%Y-%m-%d %H:%M:%S') if lastHeardStr else None
             lastLocation = flight.get("lastLocation", None) or ""
-            lastAltitude = flight.get("lastAltitude", None) or 0
             telemetry = flight.get("telemetry", "traveler")
             comments = flight.get("comments", "")
             firstHeardStr = flight.get("firstHeard", None)
             firstHeard = datetime.strptime(firstHeardStr, '%Y-%m-%d %H:%M:%S') if firstHeardStr else None
 
             #Go check to see if we have a new spot for this callsign, that's newer than the lastHeard
-            spot = getSpot(callsign, band, lastHeard, lastLocation, lastAltitude)
+            spot = getSpot(callsign, band, lastHeard, lastLocation)
 
             #See if there was a newer spot found
             if spot:
@@ -313,14 +312,13 @@ def writeKml(log_path, kml_path, callsign):
         f.write(kml)
 
 
-def getSpot(callsign, band, lastSpotTime, lastSpotGrid, lastSpotAlt):
+def getSpot(callsign, band, lastSpotTime, lastSpotGrid):
     """
     Get the most recent WSPR spots for a given callsign from WSPRnet.
     
     :param callsign: The callsign to search for
     :param lastSpotTime: The last time a spot was recorded
     :param lastSpotGrid: The last grid square recorded
-    :param lastSpotAlt: The last altitude recorded
     :return: A list of spots as dictionaries
     """
     print()
@@ -380,8 +378,8 @@ def getSpot(callsign, band, lastSpotTime, lastSpotGrid, lastSpotAlt):
             #Check if lastSpotTime is not None and if the spot is newer than lastSpotTime
             if spot['Datetime'] is not None and (lastSpotTime is None or spot['Datetime'] > lastSpotTime):
                 print("Newer spot found:")
-                if spot['Gridsquare'] != lastSpotGrid or spot['Altitude'] != lastSpotAlt:
-                    print("  Newer spot found with different grid square or altitude:")
+                if spot['Gridsquare'] != lastSpotGrid:
+                    print("  Newer spot found with different grid square:")
                     if (spot['Gridsquare'] != "JJ00aa"):
                         print("  ...found a grid square that wasn't 0,0, so returning this spot")
                         print(spot)
