@@ -24,7 +24,7 @@ This firmware requires the following libraries to be installed with the Library 
 */
 
 
-#define FIRMWARE_VERSION "1.0.2"
+#define FIRMWARE_VERSION "1.0.3"
 #define CONFIG_PROMPT "\n\n# "
 #include "BoardDef.h"   //defines if this is a ptFlex, ptSolar, or ptSolarHF PCB board
 
@@ -361,6 +361,8 @@ static void sendWSPR(bool useFreq1) {
     byte byTemp;
     Serial.print(F("Xmit "));
     Serial.println((useFreq1 ? "freq 1" : "freq 2"));
+
+    GPSParser.disableGPS(); // turn off the GPS while we're transmitting.
 
     //make sure the correction has been set before we transmit
     si5351.set_correction(Config.getCorrection(), SI5351_PLL_INPUT_XO);
