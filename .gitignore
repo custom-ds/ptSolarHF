@@ -65,3 +65,5 @@ eagle.epf
 *.FCBak
 wspr-to-aprs/config.json
 /wspr-to-aprs/logs
+3d-prints/Fan Dipole Spreader.stl
+3d-prints/Fan Dipole T.FCStd
