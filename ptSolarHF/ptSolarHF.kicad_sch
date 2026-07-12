@@ -1667,262 +1667,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Device:Crystal_GND24"
-			(pin_names
-				(offset 1.016)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "Y"
-				(at 3.175 5.08 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Value" "Crystal_GND24"
-				(at 3.175 3.175 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "~"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Four pin crystal, GND on pins 2 and 4"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "quartz ceramic resonator oscillator"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "Crystal*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "Crystal_GND24_0_1"
-				(polyline
-					(pts
-						(xy -2.54 2.286) (xy -2.54 3.556) (xy 2.54 3.556) (xy 2.54 2.286)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -2.54 0) (xy -2.032 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -2.54 -2.286) (xy -2.54 -3.556) (xy 2.54 -3.556) (xy 2.54 -2.286)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -2.032 -1.27) (xy -2.032 1.27)
-					)
-					(stroke
-						(width 0.508)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.143 2.54)
-					(end 1.143 -2.54)
-					(stroke
-						(width 0.3048)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 3.556) (xy 0 3.81)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -3.81) (xy 0 -3.556)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.032 0) (xy 2.54 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.032 -1.27) (xy 2.032 1.27)
-					)
-					(stroke
-						(width 0.508)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "Crystal_GND24_1_1"
-				(pin passive line
-					(at -3.81 0 0)
-					(length 1.27)
-					(name "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 5.08 270)
-					(length 1.27)
-					(name "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -5.08 90)
-					(length 1.27)
-					(name "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 3.81 0 180)
-					(length 1.27)
-					(name "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "Device:D_Schottky"
 			(pin_numbers
 				(hide yes)
@@ -3959,6 +3703,176 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Oscillator:TG2520SMN-xx.xxxxxxMhz-xxxxNM"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "Y"
+				(at -5.08 6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "TG2520SMN-xx.xxxxxxMhz-xxxxNM"
+				(at 1.27 -6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" "Oscillator:Oscillator_SMD_SeikoEpson_TG2520SMN-xxx-xxxxxx-4Pin_2.5x2.0mm"
+				(at 11.43 -8.89 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://support.epson.biz/td/api/doc_check.php?dl=app_TG2520SMN&lang=en"
+				(at -2.54 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Crystal Oscillator Low Profile / High Stability TCXO"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "Crystal Clock Oscillator"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Oscillator*SMD*SeikoEpson*TG2520*2.5x2.0mm*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "TG2520SMN-xx.xxxxxxMhz-xxxxNM_0_1"
+				(rectangle
+					(start -5.08 5.08)
+					(end 5.08 -5.08)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.905 -0.635) (xy -1.27 -0.635) (xy -1.27 0.635) (xy -0.635 0.635) (xy -0.635 -0.635) (xy 0 -0.635)
+						(xy 0 0.635) (xy 0.635 0.635) (xy 0.635 -0.635)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TG2520SMN-xx.xxxxxxMhz-xxxxNM_1_1"
+				(pin no_connect line
+					(at -5.08 0 0)
+					(length 2.54)
+					(hide yes)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 7.62 270)
+					(length 2.54)
+					(name "Vcc"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -7.62 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name "OUT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Transistor_FET:IRLML6402"
 			(pin_names
 				(hide yes)
@@ -4929,10 +4843,16 @@
 		(uuid "5c44bd7e-cb51-4655-a1ff-e609acb44d27")
 	)
 	(junction
-		(at 217.17 82.55)
+		(at 191.77 82.55)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "5d4215e3-b196-4cc1-8955-873d8eba8c9d")
+	)
+	(junction
+		(at 222.25 73.66)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "600924ea-e02d-4bae-9f61-97b54a9b0338")
 	)
 	(junction
 		(at 292.1 190.5)
@@ -5013,7 +4933,7 @@
 		(uuid "8b2b8634-92fe-4d45-826b-0cc462d47cfc")
 	)
 	(junction
-		(at 209.55 96.52)
+		(at 184.15 96.52)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "90f9593d-4111-45ac-b3a9-5d7d71c35767")
@@ -5049,6 +4969,12 @@
 		(uuid "a2679b97-ae30-43b7-a51b-5fa79f212a74")
 	)
 	(junction
+		(at 222.25 92.71)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "ada2606a-0a8d-4144-ac73-79ef4f645f0b")
+	)
+	(junction
 		(at 288.29 148.59)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5073,7 +4999,7 @@
 		(uuid "d2d9b237-4202-4609-8af4-43c5d22d0c7a")
 	)
 	(junction
-		(at 217.17 99.06)
+		(at 191.77 99.06)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "db9c74e5-c7a0-4081-bfca-2dec61c1e73c")
@@ -5126,6 +5052,10 @@
 		(color 0 0 0 0)
 		(uuid "f9f44ba5-924c-4361-bb12-534c7bc4719c")
 	)
+	(no_connect
+		(at 251.46 88.9)
+		(uuid "ed073525-c176-4b65-beae-52d1076a026d")
+	)
 	(wire
 		(pts
 			(xy 245.11 146.05) (xy 245.11 151.13)
@@ -5168,16 +5098,6 @@
 	)
 	(wire
 		(pts
-			(xy 241.3 86.36) (xy 240.03 86.36)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "055c7a0e-edc4-4890-a47d-621aaab6c98f")
-	)
-	(wire
-		(pts
 			(xy 78.74 190.5) (xy 90.17 190.5)
 		)
 		(stroke
@@ -5208,7 +5128,7 @@
 	)
 	(wire
 		(pts
-			(xy 209.55 96.52) (xy 251.46 96.52)
+			(xy 184.15 96.52) (xy 251.46 96.52)
 		)
 		(stroke
 			(width 0)
@@ -5255,6 +5175,16 @@
 			(type default)
 		)
 		(uuid "0d32ed62-4739-498c-a615-4436b730ba60")
+	)
+	(wire
+		(pts
+			(xy 245.11 83.82) (xy 251.46 83.82)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0e4d2416-216f-4415-8c0d-efd245e4414a")
 	)
 	(wire
 		(pts
@@ -5468,7 +5398,7 @@
 	)
 	(wire
 		(pts
-			(xy 200.66 99.06) (xy 217.17 99.06)
+			(xy 175.26 99.06) (xy 191.77 99.06)
 		)
 		(stroke
 			(width 0)
@@ -5545,6 +5475,16 @@
 			(type solid)
 		)
 		(uuid "331cc0e6-2158-4e9e-871d-5484e08afc34")
+	)
+	(wire
+		(pts
+			(xy 229.87 83.82) (xy 237.49 83.82)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3338bd56-9a24-4d57-a84f-83f3cd58d469")
 	)
 	(wire
 		(pts
@@ -5628,7 +5568,17 @@
 	)
 	(wire
 		(pts
-			(xy 200.66 96.52) (xy 209.55 96.52)
+			(xy 209.55 92.71) (xy 222.25 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c71ff96-06df-4daa-9893-c326b68ac5aa")
+	)
+	(wire
+		(pts
+			(xy 175.26 96.52) (xy 184.15 96.52)
 		)
 		(stroke
 			(width 0)
@@ -5718,7 +5668,7 @@
 	)
 	(wire
 		(pts
-			(xy 217.17 99.06) (xy 251.46 99.06)
+			(xy 191.77 99.06) (xy 251.46 99.06)
 		)
 		(stroke
 			(width 0)
@@ -5755,6 +5705,16 @@
 			(type solid)
 		)
 		(uuid "4ddfaf5a-e0d8-460b-917f-6de3642cd42a")
+	)
+	(wire
+		(pts
+			(xy 222.25 73.66) (xy 222.25 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4e74539f-2fd2-4690-90a7-9dc0779e22bf")
 	)
 	(wire
 		(pts
@@ -5885,16 +5845,6 @@
 			(type default)
 		)
 		(uuid "5c374095-2b21-4f1b-b1ff-6ca42f6e325e")
-	)
-	(wire
-		(pts
-			(xy 251.46 82.55) (xy 251.46 83.82)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5cfc982f-266c-42ee-ad63-b7931365279a")
 	)
 	(wire
 		(pts
@@ -6048,6 +5998,16 @@
 	)
 	(wire
 		(pts
+			(xy 209.55 73.66) (xy 222.25 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6c0dc005-730b-4812-8260-28461ce8de4f")
+	)
+	(wire
+		(pts
 			(xy 90.17 92.71) (xy 115.57 92.71)
 		)
 		(stroke
@@ -6138,16 +6098,6 @@
 	)
 	(wire
 		(pts
-			(xy 234.95 82.55) (xy 251.46 82.55)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "761c1e1b-2d16-460f-a904-4565516e4c24")
-	)
-	(wire
-		(pts
 			(xy 242.57 200.66) (xy 250.19 200.66)
 		)
 		(stroke
@@ -6168,13 +6118,13 @@
 	)
 	(wire
 		(pts
-			(xy 228.6 86.36) (xy 229.87 86.36)
+			(xy 222.25 92.71) (xy 222.25 91.44)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "7b194ae6-4011-4532-82ae-416ee2a19cba")
+		(uuid "79bdf210-14d2-4fc6-8874-1cd218085a7c")
 	)
 	(wire
 		(pts
@@ -6288,16 +6238,6 @@
 	)
 	(wire
 		(pts
-			(xy 234.95 90.17) (xy 251.46 90.17)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "803b9e34-96b6-413d-aa64-7d095348aa48")
-	)
-	(wire
-		(pts
 			(xy 102.87 62.23) (xy 118.11 62.23)
 		)
 		(stroke
@@ -6318,7 +6258,7 @@
 	)
 	(wire
 		(pts
-			(xy 209.55 85.09) (xy 209.55 82.55)
+			(xy 184.15 85.09) (xy 184.15 82.55)
 		)
 		(stroke
 			(width 0)
@@ -6335,16 +6275,6 @@
 			(type default)
 		)
 		(uuid "856ed764-b89d-4a23-8e46-b91c01d51b68")
-	)
-	(wire
-		(pts
-			(xy 251.46 90.17) (xy 251.46 88.9)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "85aaf03d-2283-490f-9b97-d66807f25530")
 	)
 	(wire
 		(pts
@@ -6408,7 +6338,7 @@
 	)
 	(wire
 		(pts
-			(xy 217.17 82.55) (xy 217.17 87.63)
+			(xy 191.77 82.55) (xy 191.77 87.63)
 		)
 		(stroke
 			(width 0)
@@ -6488,7 +6418,7 @@
 	)
 	(wire
 		(pts
-			(xy 209.55 82.55) (xy 217.17 82.55)
+			(xy 184.15 82.55) (xy 191.77 82.55)
 		)
 		(stroke
 			(width 0)
@@ -6878,6 +6808,16 @@
 	)
 	(wire
 		(pts
+			(xy 209.55 74.93) (xy 209.55 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d03890b1-e765-4a44-a8b9-3a3b87ee15fc")
+	)
+	(wire
+		(pts
 			(xy 234.95 218.44) (xy 234.95 220.98)
 		)
 		(stroke
@@ -6945,6 +6885,16 @@
 			(type default)
 		)
 		(uuid "dd8566ee-44ed-4012-ad50-5a3fbdc27856")
+	)
+	(wire
+		(pts
+			(xy 209.55 82.55) (xy 209.55 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "de522cac-2dee-4c96-ac6b-0a7b5dcbf9b4")
 	)
 	(wire
 		(pts
@@ -7048,7 +6998,7 @@
 	)
 	(wire
 		(pts
-			(xy 217.17 95.25) (xy 217.17 99.06)
+			(xy 191.77 95.25) (xy 191.77 99.06)
 		)
 		(stroke
 			(width 0)
@@ -7178,7 +7128,7 @@
 	)
 	(wire
 		(pts
-			(xy 209.55 92.71) (xy 209.55 96.52)
+			(xy 184.15 92.71) (xy 184.15 96.52)
 		)
 		(stroke
 			(width 0)
@@ -7460,7 +7410,7 @@
 	)
 	(global_label "SDA"
 		(shape input)
-		(at 200.66 99.06 180)
+		(at 175.26 99.06 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7470,7 +7420,7 @@
 		)
 		(uuid "777e3390-5241-454c-b0ba-24e01e8ec14f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 196.0728 99.06 0)
+			(at 170.6728 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7724,7 +7674,7 @@
 	)
 	(global_label "SCL"
 		(shape input)
-		(at 200.66 96.52 180)
+		(at 175.26 96.52 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7734,7 +7684,7 @@
 		)
 		(uuid "e3f34b40-9e86-4888-915d-29132d41a8b6")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 196.1151 96.52 0)
+			(at 170.7151 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7811,16 +7761,35 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 241.3 86.36 0)
+		(lib_id "Oscillator:TG2520SMN-xx.xxxxxxMhz-xxxxNM")
+		(at 222.25 83.82 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "01321ce6-4a67-4d05-b6bb-6479a4ebcf88")
-		(property "Reference" "#SUPPLY02"
-			(at 241.3 86.36 0)
+		(fields_autoplaced yes)
+		(uuid "065aeaec-670b-4ec3-8411-142956ede735")
+		(property "Reference" "Y2"
+			(at 215.9 82.5499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "26.000MHz TCXO"
+			(at 215.9 85.0899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Oscillator:Oscillator_SMD_SeikoEpson_TG2520SMN-xxx-xxxxxx-4Pin_2.5x2.0mm"
+			(at 233.68 92.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7828,18 +7797,8 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "GND"
-			(at 242.824 88.392 0)
-			(effects
-				(font
-					(size 1.778 1.5113)
-				)
-				(justify left bottom)
-				(hide yes)
-			)
-		)
-		(property "Footprint" ""
-			(at 241.3 86.36 0)
+		(property "Datasheet" "https://support.epson.biz/td/api/doc_check.php?dl=app_TG2520SMN&lang=en"
+			(at 219.71 83.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7847,8 +7806,8 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
-			(at 241.3 86.36 0)
+		(property "Description" "Crystal Oscillator Low Profile / High Stability TCXO"
+			(at 222.25 83.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7856,22 +7815,49 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 241.3 86.36 0)
+		(property "LCSC" "C3013793"
+			(at 222.25 83.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(hide yes)
 			)
+		)
+		(property "Digikey" ""
+			(at 222.25 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PosAdjust" "-90"
+			(at 222.25 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "3"
+			(uuid "b8dc73dd-7c20-47c7-b15b-26e452172f85")
+		)
+		(pin "4"
+			(uuid "b14af96e-1557-4105-91f7-563e66d4507d")
 		)
 		(pin "1"
-			(uuid "de9364dd-8b2e-4f48-8dbd-ee0a1837bf9c")
+			(uuid "29a45d21-60b2-455d-9d30-f61c363c53a7")
+		)
+		(pin "2"
+			(uuid "05f4c084-95c4-46e1-bb0c-953ba8ed6378")
 		)
 		(instances
 			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
-					(reference "#SUPPLY02")
+					(reference "Y2")
 					(unit 1)
 				)
 			)
@@ -7935,7 +7921,7 @@
 			(uuid "28c3ffdb-639c-4707-b730-db0e2b709c83")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#PWR09")
 					(unit 1)
@@ -8040,7 +8026,7 @@
 			(uuid "0f2eff38-1405-489f-b32e-b300f4c9aeba")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "D6")
 					(unit 1)
@@ -8105,7 +8091,7 @@
 			(uuid "a6fbdbbb-3b14-4e0e-8afe-6e2df6d6cd2f")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#PWR012")
 					(unit 1)
@@ -8193,7 +8179,7 @@
 			(uuid "07f84ea6-4b1b-47b2-8093-6be89af45ecb")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C2")
 					(unit 1)
@@ -8260,7 +8246,7 @@
 			(uuid "a64085d3-74a8-4eca-8a83-a884afa6e165")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY015")
 					(unit 1)
@@ -8327,7 +8313,7 @@
 			(uuid "6b9c68a1-3fd0-45e4-934f-ada3d7e8e312")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY07")
 					(unit 1)
@@ -8406,6 +8392,15 @@
 				(hide yes)
 			)
 		)
+		(property "PosAdjust" "-90"
+			(at 260.35 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "6"
 			(uuid "52308b04-07ea-4337-acf7-a17a96990d31")
 		)
@@ -8461,7 +8456,7 @@
 			(uuid "e893be67-8e09-47c4-9858-584d878b148e")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "U4")
 					(unit 1)
@@ -8471,7 +8466,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_US")
-		(at 209.55 88.9 0)
+		(at 184.15 88.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8480,7 +8475,7 @@
 		(fields_autoplaced yes)
 		(uuid "25fb72d8-9d20-4747-80ab-b80a33d1781b")
 		(property "Reference" "R8"
-			(at 212.09 87.6299 0)
+			(at 186.69 87.6299 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8489,7 +8484,7 @@
 			)
 		)
 		(property "Value" "4.7k"
-			(at 212.09 90.1699 0)
+			(at 186.69 90.1699 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8498,7 +8493,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
-			(at 210.566 89.154 90)
+			(at 185.166 89.154 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8507,7 +8502,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 209.55 88.9 0)
+			(at 184.15 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8516,7 +8511,7 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
-			(at 209.55 88.9 0)
+			(at 184.15 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8525,7 +8520,7 @@
 			)
 		)
 		(property "Digikey" "311-4.7KARCT-ND"
-			(at 209.55 88.9 0)
+			(at 184.15 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8534,7 +8529,7 @@
 			)
 		)
 		(property "LCSC" "C60816"
-			(at 209.55 88.9 0)
+			(at 184.15 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8543,7 +8538,7 @@
 			)
 		)
 		(property "DigiKey-PN" ""
-			(at 209.55 88.9 0)
+			(at 184.15 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8645,7 +8640,7 @@
 			(uuid "e98fe9d4-f797-4ebf-80fd-c609581ed833")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "D3")
 					(unit 1)
@@ -8733,7 +8728,7 @@
 			(uuid "1bd9e825-3295-4752-b515-969f32dd4e0c")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C4")
 					(unit 1)
@@ -8820,7 +8815,7 @@
 			(uuid "a49a8c5e-951c-4e52-9c26-1da663ca7436")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C19")
 					(unit 1)
@@ -8908,7 +8903,7 @@
 			(uuid "f5659c0e-5f69-456b-aafc-b08763ad9233")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C21")
 					(unit 1)
@@ -8994,7 +8989,7 @@
 			(uuid "17d5bbf5-1831-456f-90a2-e392209f25a8")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "L3")
 					(unit 1)
@@ -9060,7 +9055,7 @@
 			(uuid "00cdb131-a7f6-4235-b72d-00e676c59010")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#PWR01")
 					(unit 1)
@@ -9127,7 +9122,7 @@
 			(uuid "20422297-a432-4ce4-b8e2-853db5c49d30")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY011")
 					(unit 1)
@@ -9223,7 +9218,7 @@
 			(uuid "59280c6d-b0ab-4b4c-8ec6-01875677a3c4")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "R4")
 					(unit 1)
@@ -9233,7 +9228,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_US")
-		(at 217.17 91.44 0)
+		(at 191.77 91.44 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9242,7 +9237,7 @@
 		(fields_autoplaced yes)
 		(uuid "388b384e-68b3-4c6d-8222-fe4b81a4487a")
 		(property "Reference" "R9"
-			(at 219.71 90.1699 0)
+			(at 194.31 90.1699 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9251,7 +9246,7 @@
 			)
 		)
 		(property "Value" "4.7k"
-			(at 219.71 92.7099 0)
+			(at 194.31 92.7099 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9260,7 +9255,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
-			(at 218.186 91.694 90)
+			(at 192.786 91.694 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9269,7 +9264,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 217.17 91.44 0)
+			(at 191.77 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9278,7 +9273,7 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
-			(at 217.17 91.44 0)
+			(at 191.77 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9287,7 +9282,7 @@
 			)
 		)
 		(property "Digikey" "311-4.7KARCT-ND"
-			(at 217.17 91.44 0)
+			(at 191.77 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9296,7 +9291,7 @@
 			)
 		)
 		(property "LCSC" "C60816"
-			(at 217.17 91.44 0)
+			(at 191.77 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9305,7 +9300,7 @@
 			)
 		)
 		(property "DigiKey-PN" ""
-			(at 217.17 91.44 0)
+			(at 191.77 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9407,7 +9402,7 @@
 			(uuid "42828c80-ee30-4b01-9fb9-fc85b4252171")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "R1")
 					(unit 1)
@@ -9540,7 +9535,7 @@
 			(uuid "6842c051-b498-4ce5-9290-9309b5f07072")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY08")
 					(unit 1)
@@ -9627,7 +9622,7 @@
 			(uuid "a7e6a72a-2696-4e41-b419-f37a3dfaf1cd")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C16")
 					(unit 1)
@@ -9694,7 +9689,7 @@
 			(uuid "31b0da91-2fee-4462-88ba-3cba6513bf5b")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY06")
 					(unit 1)
@@ -9868,7 +9863,7 @@
 			(uuid "5c746e2e-90bc-46fd-80d8-a42e99ab0537")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "J1")
 					(unit 1)
@@ -9956,7 +9951,7 @@
 			(uuid "2646e2cc-e9e9-4110-9213-7aee89d31d19")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C10")
 					(unit 1)
@@ -10044,7 +10039,7 @@
 			(uuid "371ac134-6963-47e9-bbc7-e9da13e65dda")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "R3")
 					(unit 1)
@@ -10111,7 +10106,7 @@
 			(uuid "59d87134-b8eb-4651-872d-305ab4b0c413")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY012")
 					(unit 1)
@@ -10199,76 +10194,9 @@
 			(uuid "6c143d78-01c3-4c7f-ae0f-bfe0239c7daa")
 		)
 		(instances
-			(project "ptSolar"
-				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
-					(reference "J2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 228.6 86.36 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "580728ec-9faf-44e3-b88c-303dcfbbb0f6")
-		(property "Reference" "#SUPPLY01"
-			(at 228.6 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 230.124 88.392 0)
-			(effects
-				(font
-					(size 1.778 1.5113)
-				)
-				(justify left bottom)
-				(hide yes)
-			)
-		)
-		(property "Footprint" ""
-			(at 228.6 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 228.6 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 228.6 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "465a1cd8-81b1-425a-8131-b07b19658992")
-		)
-		(instances
 			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
-					(reference "#SUPPLY01")
+					(reference "J2")
 					(unit 1)
 				)
 			)
@@ -10509,7 +10437,7 @@
 			(uuid "3554c80a-3ae1-40bc-8652-4a2922fbf44b")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C12")
 					(unit 1)
@@ -10588,6 +10516,15 @@
 				(font
 					(size 1.27 1.27)
 				)
+			)
+		)
+		(property "PosAdjust" "-90"
+			(at 74.93 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
 		)
 		(pin "11"
@@ -10687,9 +10624,76 @@
 			(uuid "3442af98-cef3-44bf-82a4-d06c88506789")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "U2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 222.25 92.71 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "66bf8c9c-726f-4b9c-850c-73ba6d149114")
+		(property "Reference" "#SUPPLY01"
+			(at 222.25 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 223.774 94.742 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 222.25 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 222.25 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 222.25 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "58ac9fb1-8221-424a-ad2a-5aac9bc0e93b")
+		)
+		(instances
+			(project "ptSolarHF"
+				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
+					(reference "#SUPPLY01")
 					(unit 1)
 				)
 			)
@@ -10754,7 +10758,7 @@
 			(uuid "5f5c88fc-edaf-4c18-b25c-dde61d4d94d4")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY024")
 					(unit 1)
@@ -10821,7 +10825,7 @@
 			(uuid "70b46097-a7d0-46c1-bb37-d64f050d3053")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY04")
 					(unit 1)
@@ -10888,9 +10892,75 @@
 			(uuid "bb0add8f-8cdf-4a00-9989-e6f9e601077d")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY014")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3.3V")
+		(at 222.25 73.66 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "883bede6-7975-4bf7-b522-1a70a89c5114")
+		(property "Reference" "#PWR06"
+			(at 222.25 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at 222.25 68.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 222.25 73.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 222.25 73.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 222.25 73.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "56ce125e-cd58-4f77-a55c-e1570ba49344")
+		)
+		(instances
+			(project "ptSolarHF"
+				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
+					(reference "#PWR06")
 					(unit 1)
 				)
 			)
@@ -10976,7 +11046,7 @@
 			(uuid "d3eeb346-c36f-4da7-bfa8-54111da61b6b")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C7")
 					(unit 1)
@@ -11043,7 +11113,7 @@
 			(uuid "86b46020-7cf5-49e3-af27-18ffae704e2d")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY013")
 					(unit 1)
@@ -11053,7 +11123,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 217.17 82.55 0)
+		(at 191.77 82.55 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11062,7 +11132,7 @@
 		(fields_autoplaced yes)
 		(uuid "953c4c15-e084-43a1-a14b-431c15027985")
 		(property "Reference" "#PWR07"
-			(at 217.17 86.36 0)
+			(at 191.77 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11071,7 +11141,7 @@
 			)
 		)
 		(property "Value" "+3.3V"
-			(at 217.17 77.47 0)
+			(at 191.77 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11079,7 +11149,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 217.17 82.55 0)
+			(at 191.77 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11088,7 +11158,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 217.17 82.55 0)
+			(at 191.77 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11097,7 +11167,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
-			(at 217.17 82.55 0)
+			(at 191.77 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11197,7 +11267,7 @@
 			(uuid "afc0e427-e38d-47a4-a3d8-49fdc081c399")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C5")
 					(unit 1)
@@ -11285,7 +11355,7 @@
 			(uuid "502c7121-0252-4cc2-bd6c-78716d489b5d")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C3")
 					(unit 1)
@@ -11351,7 +11421,7 @@
 			(uuid "779eede4-3151-4ff4-9fe2-c611b85d2e1c")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#PWR010")
 					(unit 1)
@@ -11456,7 +11526,7 @@
 			(uuid "063e790d-299d-4624-a97e-162a49794cd1")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "D5")
 					(unit 1)
@@ -11542,7 +11612,7 @@
 			(uuid "ef581f36-7dde-46ed-8bd6-eec88bb34b27")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "L1")
 					(unit 1)
@@ -11629,7 +11699,7 @@
 			(uuid "fa282c91-8b22-42a0-89f9-117e0bde34dd")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C17")
 					(unit 1)
@@ -11784,7 +11854,7 @@
 			(uuid "662b158a-8d73-4d7f-9c5a-295b8daed6d6")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C9")
 					(unit 1)
@@ -11850,7 +11920,7 @@
 			(uuid "a032a2fc-d1ad-4be9-ac54-be2d0422f046")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#PWR04")
 					(unit 1)
@@ -11946,7 +12016,7 @@
 			(uuid "fd520384-78f3-4ac4-a6c6-17afba66fbff")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "R5")
 					(unit 1)
@@ -11963,7 +12033,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b8d92336-d513-4e94-be28-21b4e09a297c")
-		(property "Reference" "Q5"
+		(property "Reference" "Q1"
 			(at 299.72 147.32 0)
 			(effects
 				(font
@@ -12030,6 +12100,15 @@
 				(hide yes)
 			)
 		)
+		(property "PosAdjust" "180"
+			(at 297.18 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "4a8f41f9-9ea6-4c1b-9af8-35b84e5e0990")
 		)
@@ -12040,9 +12119,9 @@
 			(uuid "24ad73c9-0261-4322-93eb-803f11b12e49")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
-					(reference "Q5")
+					(reference "Q1")
 					(unit 1)
 				)
 			)
@@ -12216,7 +12295,7 @@
 			(uuid "6ba108ef-3414-4d01-bb82-afefa03c68c4")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C11")
 					(unit 1)
@@ -12304,7 +12383,7 @@
 			(uuid "8510e7c7-8d1f-4ab2-9c39-14e953adaa0d")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C14")
 					(unit 1)
@@ -12393,7 +12472,7 @@
 			(uuid "96daee91-581e-489a-be40-46d39b9f6a30")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "ANT2")
 					(unit 1)
@@ -12481,7 +12560,7 @@
 			(uuid "b3601255-dba9-4a99-a1dc-b2e3a278b588")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C20")
 					(unit 1)
@@ -12569,7 +12648,7 @@
 			(uuid "fe602ff5-66db-427f-8211-b1d68d75929e")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C6")
 					(unit 1)
@@ -12657,7 +12736,7 @@
 			(uuid "cfa07ed9-6a89-43b4-a25a-fd877c4b508d")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "R6")
 					(unit 1)
@@ -12724,7 +12803,7 @@
 			(uuid "96ae25ca-100a-49dd-8621-2d00d65c3040")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY03")
 					(unit 1)
@@ -12810,100 +12889,9 @@
 			(uuid "2872ad12-1247-49ec-835d-70a369f31795")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "L2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:Crystal_GND24")
-		(at 234.95 86.36 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "cb5d4230-24a3-4a55-9435-f27371f03450")
-		(property "Reference" "Y2"
-			(at 223.774 75.946 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "27MHz Xtal - 7M-27.000MEEQ-T"
-			(at 239.014 77.978 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm"
-			(at 234.95 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 234.95 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Four pin crystal, GND on pins 2 and 4"
-			(at 234.95 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Digikey" "887-1328-1-ND"
-			(at 234.95 86.36 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C2450429"
-			(at 234.95 86.36 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "3"
-			(uuid "40a6bc2c-6b99-4956-ba8f-3f9c29f01bfe")
-		)
-		(pin "1"
-			(uuid "5e412c7c-a9a6-4124-bb1c-ca2e50797692")
-		)
-		(pin "2"
-			(uuid "45f96331-bac7-4327-835e-05fabfa997ad")
-		)
-		(pin "4"
-			(uuid "c339ede7-6103-4183-941d-839d7e104388")
-		)
-		(instances
-			(project ""
-				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
-					(reference "Y2")
 					(unit 1)
 				)
 			)
@@ -12967,7 +12955,7 @@
 			(uuid "de33b58c-489e-47f1-9543-f7e379d3cbd5")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#PWR03")
 					(unit 1)
@@ -13048,6 +13036,15 @@
 				(hide yes)
 			)
 		)
+		(property "PosAdjust" "180"
+			(at 39.37 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "22110c5e-52ef-412c-a2c0-7eb3da00f367")
 		)
@@ -13058,7 +13055,7 @@
 			(uuid "d009ca9d-5bf3-4edd-b5f2-868e01016064")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "U5")
 					(unit 1)
@@ -13143,7 +13140,7 @@
 			(uuid "da1b6d85-b783-4994-b842-a01b83ee1efd")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "ANT1")
 					(unit 1)
@@ -13298,7 +13295,7 @@
 			(uuid "8c7f2764-819b-4e0f-90de-e5dac05e6ce8")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY021")
 					(unit 1)
@@ -13385,7 +13382,7 @@
 			(uuid "b8f8415f-37c1-40a6-b950-46a4473ef32d")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "D2")
 					(unit 1)
@@ -13473,7 +13470,7 @@
 			(uuid "7d7a7500-a168-4017-af1e-d540655e1bb8")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "R7")
 					(unit 1)
@@ -13554,6 +13551,15 @@
 				(hide yes)
 			)
 		)
+		(property "PosAdjust" "180"
+			(at 234.95 195.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "10556ddf-783f-4060-a19c-3e4b2687f295")
 		)
@@ -13570,7 +13576,7 @@
 			(uuid "bd16dfc9-c98c-4522-a87e-08debcb2d20d")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "U1")
 					(unit 1)
@@ -13657,7 +13663,7 @@
 			(uuid "265ac6ec-6fd2-46ce-a8b1-734fd5f48622")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C18")
 					(unit 1)
@@ -13723,7 +13729,7 @@
 			(uuid "da10f559-7811-468f-bcc0-2a0b6dd46fd3")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#PWR08")
 					(unit 1)
@@ -13789,7 +13795,7 @@
 			(uuid "26f6a54e-baec-42bb-bba8-b1fbc50c14e5")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#PWR02")
 					(unit 1)
@@ -13879,7 +13885,7 @@
 			(uuid "c4cb9165-21ea-40c7-8e51-6c449fc956c7")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "Y1")
 					(unit 1)
@@ -13968,9 +13974,185 @@
 			(uuid "c1fefcc3-0839-412d-b2f0-83f56712bd32")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "D4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 241.3 83.82 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e330ccb4-aec7-4159-b498-992c54983e03")
+		(property "Reference" "C23"
+			(at 240.665 82.804 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Value" "10nF"
+			(at 245.491 82.804 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 245.11 82.8548 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 241.3 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 241.3 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digikey" "399-1158-1-ND"
+			(at 241.3 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C83170"
+			(at 241.3 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "93cb3105-62d7-4956-80f7-73c13dd6bbbe")
+		)
+		(pin "2"
+			(uuid "b85561b1-77e2-4772-a3ac-24d76200c699")
+		)
+		(instances
+			(project "ptSolarHF"
+				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
+					(reference "C23")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 209.55 78.74 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e7a8aa93-a9f0-4f5b-9dec-9f41e8aff775")
+		(property "Reference" "C22"
+			(at 210.566 78.105 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Value" "10nF"
+			(at 210.566 82.931 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 210.5152 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 209.55 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 209.55 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digikey" "399-1158-1-ND"
+			(at 209.55 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C83170"
+			(at 209.55 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "590f3a34-3558-4005-8bdf-a85d4c54dc8a")
+		)
+		(pin "2"
+			(uuid "5b131b56-7faa-4fd3-a3b7-6676770afe6f")
+		)
+		(instances
+			(project "ptSolarHF"
+				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
+					(reference "C22")
 					(unit 1)
 				)
 			)
@@ -14034,7 +14216,7 @@
 			(uuid "74dfce04-f2e3-42ab-8fcf-38e305cf2d2b")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY017")
 					(unit 1)
@@ -14121,7 +14303,7 @@
 			(uuid "2a8821ea-1114-4469-8f18-f96905ab25dd")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "D1")
 					(unit 1)
@@ -14188,7 +14370,7 @@
 			(uuid "3570e110-b70f-4607-b792-775471578f78")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY020")
 					(unit 1)
@@ -14274,7 +14456,7 @@
 			(uuid "31b7a0df-417d-437d-87db-afc85dbc3893")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "PV2")
 					(unit 1)
@@ -14362,7 +14544,7 @@
 			(uuid "23658f74-2a72-4653-a74a-c0b7f0eb63b9")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C1")
 					(unit 1)
@@ -14429,7 +14611,7 @@
 			(uuid "b6693c32-dba5-4356-bee4-73cafb662041")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "#SUPPLY019")
 					(unit 1)
@@ -14517,7 +14699,7 @@
 			(uuid "4210e0e6-230b-4050-99fa-31a659685c2c")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "R11")
 					(unit 1)
@@ -14603,7 +14785,7 @@
 			(uuid "74177ac0-6ddb-4f56-aa72-4f9d25452a5f")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "PV1")
 					(unit 1)
@@ -14691,7 +14873,7 @@
 			(uuid "dcd4ac8d-d04b-444d-bb49-17e9367a066a")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "R2")
 					(unit 1)
@@ -14772,6 +14954,15 @@
 				(hide yes)
 			)
 		)
+		(property "PosAdjust" "-90"
+			(at 264.16 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "37f3fb3e-c122-4579-81fe-cd6173ffee81")
 		)
@@ -14803,7 +14994,7 @@
 			(uuid "42404f73-15ec-43a5-9eaf-b16b829b0317")
 		)
 		(instances
-			(project ""
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "U3")
 					(unit 1)
@@ -14891,7 +15082,7 @@
 			(uuid "6f434e57-dafa-4da5-a0f4-f1ed524fa2a0")
 		)
 		(instances
-			(project "ptSolar"
+			(project "ptSolarHF"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "C8")
 					(unit 1)
