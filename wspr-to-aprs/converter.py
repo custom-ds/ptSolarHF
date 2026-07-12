@@ -42,13 +42,14 @@ def main():
             lastHeardStr = flight.get("lastHeard", None)
             lastHeard = datetime.strptime(lastHeardStr, '%Y-%m-%d %H:%M:%S') if lastHeardStr else None
             lastLocation = flight.get("lastLocation", None) or ""
+            lastAltitude = flight.get("lastAltitude", None)
             telemetry = flight.get("telemetry", "traveler")
             comments = flight.get("comments", "")
             firstHeardStr = flight.get("firstHeard", None)
             firstHeard = datetime.strptime(firstHeardStr, '%Y-%m-%d %H:%M:%S') if firstHeardStr else None
 
             #Go check to see if we have a new spot for this callsign, that's newer than the lastHeard
-            spot = getSpot(callsign, band, lastHeard, lastLocation)
+            spot = getSpot(callsign, band, lastHeard, lastLocation, lastAltitude, telemetry)
 
             #See if there was a newer spot found
             if spot:
@@ -312,13 +313,15 @@ def writeKml(log_path, kml_path, callsign):
         f.write(kml)
 
 
-def getSpot(callsign, band, lastSpotTime, lastSpotGrid):
+def getSpot(callsign, band, lastSpotTime, lastSpotGrid, lastSpotAltitude=None, telemetry="traveler"):
     """
     Get the most recent WSPR spots for a given callsign from WSPRnet.
-    
+
     :param callsign: The callsign to search for
     :param lastSpotTime: The last time a spot was recorded
     :param lastSpotGrid: The last grid square recorded
+    :param lastSpotAltitude: The last altitude (in feet) recorded
+    :param telemetry: The telemetry type, used to decode altitude from the spot's power field
     :return: A list of spots as dictionaries
     """
     print()
@@ -382,6 +385,19 @@ def getSpot(callsign, band, lastSpotTime, lastSpotGrid):
                     print("  Newer spot found with different grid square:")
                     if (spot['Gridsquare'] != "JJ00aa"):
                         print("  ...found a grid square that wasn't 0,0, so returning this spot")
+                        print(spot)
+                        return spot
+                else:
+                    #Same grid square as last time - still spot it if it's been more than 24
+                    #hours since the last spot, or if the altitude has changed
+                    hoursSinceLastSpot = (spot['Datetime'] - lastSpotTime).total_seconds() / 3600 if lastSpotTime else None
+                    currentAltitude = int(calcCoarseAltitude(spot['dBm'], telemetry) * 3.28084)
+                    if hoursSinceLastSpot is not None and hoursSinceLastSpot > 24:
+                        print("  ...same grid square, but it's been more than 24 hours since the last spot, so returning this spot")
+                        print(spot)
+                        return spot
+                    elif lastSpotAltitude is not None and currentAltitude != lastSpotAltitude:
+                        print("  ...same grid square, but the altitude has changed, so returning this spot")
                         print(spot)
                         return spot
     except:
